@@ -1,0 +1,7 @@
+apiVersion: sentry.kubernetes.jaceys.me/v1alpha1
+kind: Project
+metadata:
+  name: project-sample
+spec:
+  # Add fields here
+  foo: bar

@@ -1,3 +1,7 @@
 domain: kubernetes.jaceys.me
 repo: github.com/jace-ys/sentry-operator
+resources:
+- group: sentry
+  kind: Project
+  version: v1alpha1
 version: "2"
