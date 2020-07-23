@@ -1,0 +1,3 @@
+domain: kubernetes.jaceys.me
+repo: github.com/jace-ys/sentry-operator
+version: "2"
