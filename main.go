@@ -27,9 +27,9 @@ SOFTWARE.
 package main
 
 import (
-	"flag"
 	"os"
 
+	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -44,6 +44,10 @@ import (
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+
+	cmd            = kingpin.New("sentry-operator", "A Kubernetes operator for Sentry.").Version("v0.0.0")
+	metricsAddr    = cmd.Flag("metrics-address", "Address to bind the metrics endpoint to.").Default("127.0.0.1:8080").String()
+	leaderElection = cmd.Flag("leader-election", "Enable leader election for controller manager.").Bool()
 )
 
 func init() {
@@ -54,22 +58,16 @@ func init() {
 }
 
 func main() {
-	var metricsAddr string
-	var enableLeaderElection bool
-	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "enable-leader-election", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
-	flag.Parse()
+	kingpin.MustParse(cmd.Parse(os.Args[1:]))
 
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
+		MetricsBindAddress: *metricsAddr,
 		Port:               9443,
-		LeaderElection:     enableLeaderElection,
-		LeaderElectionID:   "eb761827.kubernetes.jaceys.me",
+		LeaderElection:     *leaderElection,
+		LeaderElectionID:   "sentry.kubernetes.jaceys.me",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
