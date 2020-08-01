@@ -42,6 +42,7 @@ type ProjectReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+	Sentry *SentryClient
 }
 
 // +kubebuilder:rbac:groups=sentry.kubernetes.jaceys.me,resources=projects,verbs=get;list;watch;create;update;patch;delete

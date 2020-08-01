@@ -38,6 +38,7 @@ import (
 
 	sentryv1alpha1 "github.com/jace-ys/sentry-operator/api/v1alpha1"
 	"github.com/jace-ys/sentry-operator/controllers"
+	"github.com/jace-ys/sentry-operator/pkg/sentry"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -45,9 +46,14 @@ var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
 
-	cmd            = kingpin.New("sentry-operator", "A Kubernetes operator for Sentry.").Version("v0.0.0")
+	cmd = kingpin.New("sentry-operator", "A Kubernetes operator for Sentry.").Version("v0.0.0")
+
 	metricsAddr    = cmd.Flag("metrics-address", "Address to bind the metrics endpoint to.").Default("127.0.0.1:8080").String()
 	leaderElection = cmd.Flag("leader-election", "Enable leader election for controller manager.").Bool()
+
+	sentryURL          = cmd.Flag("sentry-url", "The URL to use to connect to Sentry.").Envar("SENTRY_URL").Default("https://sentry.io/").URL()
+	sentryToken        = cmd.Flag("sentry-token", "Authentication token belonging to a user under the Sentry organization.").Envar("SENTRY_TOKEN").Required().String()
+	sentryOrganization = cmd.Flag("sentry-organization", "Name of the Sentry organization to be managed.").Envar("SENTRY_ORGANIZATION").Required().String()
 )
 
 func init() {
@@ -74,10 +80,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	sentryClient := sentry.NewClient(*sentryToken, sentry.WithSentryURL(*sentryURL))
+
 	if err = (&controllers.ProjectReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Project"),
 		Scheme: mgr.GetScheme(),
+		Sentry: &controllers.SentryClient{
+			Client:       sentryClient,
+			Organization: *sentryOrganization,
+		},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Project")
 		os.Exit(1)
