@@ -60,31 +60,33 @@ func WithSentryURL(sentryURL *url.URL) ClientOption {
 	}
 }
 
-func (c *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
+func (c *Client) do(req *http.Request, v interface{}) (*Response, error) {
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	if code := resp.StatusCode; code < 200 || code > 299 {
+	response := c.newResponse(resp)
+
+	if code := response.StatusCode; code < 200 || code > 299 {
 		apiErr := make(APIError)
-		err := json.NewDecoder(resp.Body).Decode(&apiErr)
+		err := json.NewDecoder(response.Body).Decode(&apiErr)
 		if err != nil {
 			return nil, err
 		}
 
-		return resp, apiErr
+		return response, apiErr
 	}
 
 	if v != nil {
-		err = json.NewDecoder(resp.Body).Decode(v)
+		err = json.NewDecoder(response.Body).Decode(v)
 		if err != nil && !errors.Is(err, io.EOF) {
 			return nil, err
 		}
 	}
 
-	return resp, nil
+	return response, nil
 }
 
 func (c *Client) newRequest(method, endpoint string, body interface{}) (*http.Request, error) {
@@ -113,4 +115,17 @@ func (c *Client) newRequest(method, endpoint string, body interface{}) (*http.Re
 	req.Header.Add("Accept", "application/json")
 
 	return req, nil
+}
+
+type Response struct {
+	*http.Response
+
+	PrevPage *Page
+	NextPage *Page
+}
+
+func (c *Client) newResponse(r *http.Response) *Response {
+	response := &Response{Response: r}
+	response.parsePaginationLinks()
+	return response
 }
