@@ -1,0 +1,142 @@
+{
+  "allowedDomains": ["*"],
+  "avatar": {
+    "avatarType": "letter_avatar",
+    "avatarUuid": null
+  },
+  "color": "#3fbf7f",
+  "dataScrubber": true,
+  "dataScrubberDefaults": true,
+  "dateCreated": "2018-11-06T21:19:55.121Z",
+  "defaultEnvironment": null,
+  "digestsMaxDelay": 1800,
+  "digestsMinDelay": 300,
+  "features": [
+    "releases",
+    "sample-events",
+    "minidump",
+    "servicehooks",
+    "rate-limits",
+    "data-forwarding"
+  ],
+  "firstEvent": null,
+  "hasAccess": true,
+  "id": "2",
+  "isBookmarked": false,
+  "isInternal": false,
+  "isMember": true,
+  "isPublic": false,
+  "latestRelease": {
+    "authors": [],
+    "commitCount": 0,
+    "data": {},
+    "dateCreated": "2018-11-06T21:20:08.033Z",
+    "dateReleased": null,
+    "deployCount": 0,
+    "firstEvent": null,
+    "lastCommit": null,
+    "lastDeploy": null,
+    "lastEvent": null,
+    "newGroups": 0,
+    "owner": null,
+    "projects": [
+      {
+        "name": "Pump Station",
+        "slug": "pump-station"
+      }
+    ],
+    "ref": "6ba09a7c53235ee8a8fa5ee4c1ca8ca886e7fdbb",
+    "shortVersion": "2.0rc2",
+    "url": null,
+    "version": "2.0rc2"
+  },
+  "name": "Pump Station",
+  "options": {
+    "feedback:branding": true,
+    "filters:blacklisted_ips": "",
+    "filters:error_messages": "",
+    "filters:releases": "",
+    "sentry:csp_ignored_sources": "",
+    "sentry:csp_ignored_sources_defaults": true,
+    "sentry:reprocessing_active": false
+  },
+  "organization": {
+    "avatar": {
+      "avatarType": "letter_avatar",
+      "avatarUuid": null
+    },
+    "dateCreated": "2018-11-06T21:19:55.101Z",
+    "id": "2",
+    "isEarlyAdopter": false,
+    "name": "The Interstellar Jurisdiction",
+    "require2FA": false,
+    "slug": "the-interstellar-jurisdiction",
+    "status": {
+      "id": "active",
+      "name": "active"
+    }
+  },
+  "platform": null,
+  "platforms": [],
+  "plugins": [
+    {
+      "assets": [],
+      "author": {
+        "name": "Sentry Team",
+        "url": "https://github.com/getsentry/sentry"
+      },
+      "canDisable": true,
+      "contexts": [],
+      "description": "Integrates web hooks.",
+      "doc": "",
+      "enabled": false,
+      "hasConfiguration": true,
+      "id": "webhooks",
+      "isTestable": true,
+      "metadata": {},
+      "name": "WebHooks",
+      "resourceLinks": [
+        {
+          "title": "Bug Tracker",
+          "url": "https://github.com/getsentry/sentry/issues"
+        },
+        {
+          "title": "Source",
+          "url": "https://github.com/getsentry/sentry"
+        }
+      ],
+      "shortName": "WebHooks",
+      "slug": "webhooks",
+      "status": "unknown",
+      "type": "notification",
+      "version": "9.1.0.dev0"
+    }
+  ],
+  "processingIssues": 0,
+  "relayPiiConfig": null,
+  "resolveAge": 0,
+  "safeFields": [],
+  "scrapeJavaScript": true,
+  "scrubIPAddresses": false,
+  "securityToken": "c3072787e20911e8a37988e9fe5cab71",
+  "securityTokenHeader": null,
+  "sensitiveFields": [],
+  "slug": "pump-station",
+  "status": "active",
+  "storeCrashReports": false,
+  "subjectPrefix": "[Sentry] ",
+  "subjectTemplate": "$shortID - $title",
+  "team": {
+    "id": "2",
+    "name": "Powerful Abolitionist",
+    "slug": "powerful-abolitionist"
+  },
+  "teams": [
+    {
+      "id": "2",
+      "name": "Powerful Abolitionist",
+      "slug": "powerful-abolitionist"
+    }
+  ],
+  "verifySSL": false
+}

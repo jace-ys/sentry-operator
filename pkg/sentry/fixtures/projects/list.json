@@ -1,0 +1,44 @@
+[
+  {
+    "avatar": {
+      "avatarType": "letter_avatar",
+      "avatarUuid": null
+    },
+    "color": "#bf6e3f",
+    "dateCreated": "2018-11-06T21:20:08.064Z",
+    "features": [
+      "servicehooks",
+      "sample-events",
+      "data-forwarding",
+      "rate-limits",
+      "minidump"
+    ],
+    "firstEvent": null,
+    "hasAccess": true,
+    "id": "4",
+    "isBookmarked": false,
+    "isInternal": false,
+    "isMember": true,
+    "isPublic": false,
+    "name": "The Spoiled Yoghurt",
+    "organization": {
+      "avatar": {
+        "avatarType": "letter_avatar",
+        "avatarUuid": null
+      },
+      "dateCreated": "2018-11-06T21:19:55.101Z",
+      "id": "2",
+      "isEarlyAdopter": false,
+      "name": "The Interstellar Jurisdiction",
+      "require2FA": false,
+      "slug": "the-interstellar-jurisdiction",
+      "status": {
+        "id": "active",
+        "name": "active"
+      }
+    },
+    "platform": null,
+    "slug": "the-spoiled-yoghurt",
+    "status": "active"
+  }
+]

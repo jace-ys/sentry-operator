@@ -22,6 +22,8 @@ type Client struct {
 	client  *http.Client
 	token   string
 	baseURL *url.URL
+
+	Projects *ProjectsService
 }
 
 type ClientOption func(*Client)
@@ -43,6 +45,9 @@ func NewClient(token string, opts ...ClientOption) *Client {
 	for _, opt := range opts {
 		opt(client)
 	}
+
+	common := service{client}
+	client.Projects = (*ProjectsService)(&common)
 
 	return client
 }
