@@ -24,6 +24,8 @@ type Project struct {
 	Platform     string    `json:"platform"`
 	Slug         string    `json:"slug"`
 	Status       string    `json:"status"`
+	Team         Team      `json:"team"`
+	Teams        []Team    `json:"teams"`
 }
 
 func (s *ProjectsService) List() ([]Project, *Response, error) {

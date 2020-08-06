@@ -1,0 +1,14 @@
+{
+  "avatar": {
+    "avatarType": "letter_avatar",
+    "avatarUuid": null
+  },
+  "dateCreated": "2018-11-06T21:20:22.924Z",
+  "hasAccess": true,
+  "id": "4",
+  "isMember": false,
+  "isPending": false,
+  "memberCount": 0,
+  "name": "The Inflated Philosophers",
+  "slug": "the-obese-philosophers"
+}

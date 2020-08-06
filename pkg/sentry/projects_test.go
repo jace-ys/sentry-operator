@@ -115,6 +115,18 @@ var _ = Describe("ProjectsService", func() {
 				Name:         "Pump Station",
 				Slug:         "pump-station",
 				Status:       "active",
+				Team: sentry.Team{
+					ID:   "2",
+					Name: "Powerful Abolitionist",
+					Slug: "powerful-abolitionist",
+				},
+				Teams: []sentry.Team{
+					{
+						ID:   "2",
+						Name: "Powerful Abolitionist",
+						Slug: "powerful-abolitionist",
+					},
+				},
 			}))
 		})
 
@@ -197,6 +209,18 @@ var _ = Describe("ProjectsService", func() {
 				Platform:     "javascript",
 				Slug:         "plane-proxy",
 				Status:       "active",
+				Team: sentry.Team{
+					ID:   "2",
+					Name: "Powerful Abolitionist",
+					Slug: "powerful-abolitionist",
+				},
+				Teams: []sentry.Team{
+					{
+						ID:   "2",
+						Name: "Powerful Abolitionist",
+						Slug: "powerful-abolitionist",
+					},
+				},
 			}))
 		})
 

@@ -1,0 +1,14 @@
+{
+  "avatar": {
+    "avatarType": "letter_avatar",
+    "avatarUuid": null
+  },
+  "dateCreated": "2018-11-06T21:20:08.115Z",
+  "hasAccess": true,
+  "id": "3",
+  "isMember": true,
+  "isPending": false,
+  "memberCount": 1,
+  "name": "Ancient Gabelers",
+  "slug": "ancient-gabelers"
+}

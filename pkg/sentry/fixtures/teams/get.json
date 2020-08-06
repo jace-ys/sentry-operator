@@ -1,0 +1,30 @@
+{
+  "avatar": {
+    "avatarType": "letter_avatar",
+    "avatarUuid": null
+  },
+  "dateCreated": "2018-11-06T21:19:55.114Z",
+  "hasAccess": true,
+  "id": "2",
+  "isMember": true,
+  "isPending": false,
+  "memberCount": 1,
+  "name": "Powerful Abolitionist",
+  "organization": {
+    "avatar": {
+      "avatarType": "letter_avatar",
+      "avatarUuid": null
+    },
+    "dateCreated": "2018-11-06T21:19:55.101Z",
+    "id": "2",
+    "isEarlyAdopter": false,
+    "name": "The Interstellar Jurisdiction",
+    "require2FA": false,
+    "slug": "the-interstellar-jurisdiction",
+    "status": {
+      "id": "active",
+      "name": "active"
+    }
+  },
+  "slug": "powerful-abolitionist"
+}

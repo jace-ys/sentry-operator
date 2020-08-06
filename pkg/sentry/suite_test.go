@@ -21,6 +21,11 @@ func TestSentry(t *testing.T) {
 
 func setup() (*http.ServeMux, *sentry.Client) {
 	handler := http.NewServeMux()
+	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"error": "Endpoint not found. Please check your handler's registered pattern."}`))
+	})
+
 	server := httptest.NewServer(handler)
 	serverURL, _ := url.Parse(server.URL)
 	client := sentry.NewClient("token", sentry.WithSentryURL(serverURL))

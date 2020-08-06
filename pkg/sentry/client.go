@@ -24,6 +24,7 @@ type Client struct {
 	baseURL *url.URL
 
 	Projects *ProjectsService
+	Teams    *TeamsService
 }
 
 type ClientOption func(*Client)
@@ -48,6 +49,7 @@ func NewClient(token string, opts ...ClientOption) *Client {
 
 	common := service{client}
 	client.Projects = (*ProjectsService)(&common)
+	client.Teams = (*TeamsService)(&common)
 
 	return client
 }
