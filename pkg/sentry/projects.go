@@ -9,23 +9,24 @@ import (
 type ProjectsService service
 
 type Project struct {
-	Avatar       Avatar    `json:"avatar"`
-	Color        string    `json:"color"`
-	DateCreated  time.Time `json:"dateCreated"`
-	Features     []string  `json:"features"`
-	FirstEvent   time.Time `json:"firstEvent"`
-	HasAccess    bool      `json:"hasAccess"`
-	ID           string    `json:"id"`
-	IsBookmarked bool      `json:"isBookmarked"`
-	IsInternal   bool      `json:"isInternal"`
-	IsMember     bool      `json:"isMember"`
-	IsPublic     bool      `json:"isPublic"`
-	Name         string    `json:"name"`
-	Platform     string    `json:"platform"`
-	Slug         string    `json:"slug"`
-	Status       string    `json:"status"`
-	Team         Team      `json:"team"`
-	Teams        []Team    `json:"teams"`
+	Avatar       Avatar       `json:"avatar"`
+	Color        string       `json:"color"`
+	DateCreated  time.Time    `json:"dateCreated"`
+	Features     []string     `json:"features"`
+	FirstEvent   time.Time    `json:"firstEvent"`
+	HasAccess    bool         `json:"hasAccess"`
+	ID           string       `json:"id"`
+	IsBookmarked bool         `json:"isBookmarked"`
+	IsInternal   bool         `json:"isInternal"`
+	IsMember     bool         `json:"isMember"`
+	IsPublic     bool         `json:"isPublic"`
+	Name         string       `json:"name"`
+	Organization Organization `json:"organization"`
+	Platform     string       `json:"platform"`
+	Slug         string       `json:"slug"`
+	Status       string       `json:"status"`
+	Team         Team         `json:"team"`
+	Teams        []Team       `json:"teams"`
 }
 
 func (s *ProjectsService) List() ([]Project, *Response, error) {

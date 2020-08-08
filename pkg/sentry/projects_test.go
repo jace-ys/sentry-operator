@@ -61,8 +61,23 @@ var _ = Describe("ProjectsService", func() {
 					IsMember:     true,
 					IsPublic:     false,
 					Name:         "The Spoiled Yoghurt",
-					Slug:         "the-spoiled-yoghurt",
-					Status:       "active",
+					Organization: sentry.Organization{
+						Avatar: sentry.Avatar{
+							AvatarType: "letter_avatar",
+						},
+						DateCreated:    parseTime("2018-11-06T21:19:55.101Z"),
+						ID:             "2",
+						IsEarlyAdopter: false,
+						Name:           "The Interstellar Jurisdiction",
+						Require2FA:     false,
+						Slug:           "the-interstellar-jurisdiction",
+						Status: sentry.OrganizationStatus{
+							ID:   "active",
+							Name: "active",
+						},
+					},
+					Slug:   "the-spoiled-yoghurt",
+					Status: "active",
 				},
 			}))
 		})
@@ -113,8 +128,23 @@ var _ = Describe("ProjectsService", func() {
 				IsMember:     true,
 				IsPublic:     false,
 				Name:         "Pump Station",
-				Slug:         "pump-station",
-				Status:       "active",
+				Organization: sentry.Organization{
+					Avatar: sentry.Avatar{
+						AvatarType: "letter_avatar",
+					},
+					DateCreated:    parseTime("2018-11-06T21:19:55.101Z"),
+					ID:             "2",
+					IsEarlyAdopter: false,
+					Name:           "The Interstellar Jurisdiction",
+					Require2FA:     false,
+					Slug:           "the-interstellar-jurisdiction",
+					Status: sentry.OrganizationStatus{
+						ID:   "active",
+						Name: "active",
+					},
+				},
+				Slug:   "pump-station",
+				Status: "active",
 				Team: sentry.Team{
 					ID:   "2",
 					Name: "Powerful Abolitionist",
@@ -206,9 +236,24 @@ var _ = Describe("ProjectsService", func() {
 				IsMember:     true,
 				IsPublic:     false,
 				Name:         "Plane Proxy",
-				Platform:     "javascript",
-				Slug:         "plane-proxy",
-				Status:       "active",
+				Organization: sentry.Organization{
+					Avatar: sentry.Avatar{
+						AvatarType: "letter_avatar",
+					},
+					DateCreated:    parseTime("2018-11-06T21:19:55.101Z"),
+					ID:             "2",
+					IsEarlyAdopter: false,
+					Name:           "The Interstellar Jurisdiction",
+					Require2FA:     false,
+					Slug:           "the-interstellar-jurisdiction",
+					Status: sentry.OrganizationStatus{
+						ID:   "active",
+						Name: "active",
+					},
+				},
+				Platform: "javascript",
+				Slug:     "plane-proxy",
+				Status:   "active",
 				Team: sentry.Team{
 					ID:   "2",
 					Name: "Powerful Abolitionist",
