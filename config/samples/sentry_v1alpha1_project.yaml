@@ -1,3 +1,4 @@
+---
 apiVersion: sentry.kubernetes.jaceys.me/v1alpha1
 kind: Project
 metadata:

@@ -1,20 +1,21 @@
-# permissions for end users to view projects.
+---
+# Permissions for end users to view projects.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: project-viewer-role
 rules:
-- apiGroups:
-  - sentry.kubernetes.jaceys.me
-  resources:
-  - projects
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - sentry.kubernetes.jaceys.me
-  resources:
-  - projects/status
-  verbs:
-  - get
+  - apiGroups:
+      - sentry.kubernetes.jaceys.me
+    resources:
+      - projects
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - sentry.kubernetes.jaceys.me
+    resources:
+      - projects/status
+    verbs:
+      - get
