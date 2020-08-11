@@ -328,4 +328,322 @@ var _ = Describe("ProjectsService", func() {
 			})
 		})
 	})
+
+	Describe("ListKeys", func() {
+		var (
+			keys []sentry.ProjectKey
+			resp *sentry.Response
+			err  error
+		)
+
+		handler, client := setup()
+		fixture, err := ioutil.ReadFile("fixtures/project_keys/list.json")
+		Expect(err).NotTo(HaveOccurred())
+
+		handler.HandleFunc("/api/0/projects/organization/project/keys/",
+			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Add("Link", newPaginationLinks())
+				w.Write(fixture)
+			}),
+		)
+
+		JustBeforeEach(func() {
+			keys, resp, err = client.Projects.ListKeys("organization", "project")
+		})
+
+		It("returns a 200 OK response", func() {
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
+
+			Expect(resp.NextPage).To(Equal(&sentry.Page{
+				URL:     "https://sentry.io/api/0/next",
+				Results: false,
+			}))
+			Expect(resp.PrevPage).To(Equal(&sentry.Page{
+				URL:     "https://sentry.io/api/0/previous",
+				Results: true,
+			}))
+
+			Expect(keys).To(Equal([]sentry.ProjectKey{
+				{
+					BrowserSDK: sentry.ProjectKeyBrowserSDK{
+						Choices: [][]string{{"latest", "latest"}, {"4.x", "4.x"}},
+					},
+					BrowserSDKVersion: "4.x",
+					DateCreated:       parseTime("2018-11-06T21:20:07.941Z"),
+					DSN: sentry.ProjectKeyDSN{
+						CDN:      "https://sentry.io/js-sdk-loader/cec9dfceb0b74c1c9a5e3c135585f364.min.js",
+						CSP:      "https://sentry.io/api/2/csp-report/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+						Minidump: "https://sentry.io/api/2/minidump/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+						Public:   "https://cec9dfceb0b74c1c9a5e3c135585f364@sentry.io/2",
+						Secret:   "https://cec9dfceb0b74c1c9a5e3c135585f364:4f6a592349e249c5906918393766718d@sentry.io/2",
+						Security: "https://sentry.io/api/2/security/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+					},
+					ID:        "cec9dfceb0b74c1c9a5e3c135585f364",
+					IsActive:  true,
+					Label:     "Fabulous Key",
+					Name:      "Fabulous Key",
+					ProjectID: 2,
+					Public:    "cec9dfceb0b74c1c9a5e3c135585f364",
+					RateLimit: sentry.ProjectKeyRateLimit{
+						Window: 0,
+						Count:  0,
+					},
+					Secret: "4f6a592349e249c5906918393766718d",
+				},
+			}))
+		})
+	})
+
+	Describe("GetKey", func() {
+		var (
+			keyID string
+
+			key  *sentry.ProjectKey
+			resp *sentry.Response
+			err  error
+		)
+
+		handler, client := setup()
+		fixture, err := ioutil.ReadFile("fixtures/project_keys/get.json")
+		Expect(err).NotTo(HaveOccurred())
+
+		handler.HandleFunc("/api/0/projects/organization/project/keys/valid/",
+			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
+				w.Write(fixture)
+			}),
+		)
+
+		BeforeEach(func() {
+			keyID = "valid"
+		})
+
+		JustBeforeEach(func() {
+			key, resp, err = client.Projects.GetKey("organization", "project", keyID)
+		})
+
+		It("returns a 200 OK response", func() {
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
+
+			Expect(key).To(Equal(&sentry.ProjectKey{
+				BrowserSDK: sentry.ProjectKeyBrowserSDK{
+					Choices: [][]string{{"latest", "latest"}, {"4.x", "4.x"}},
+				},
+				BrowserSDKVersion: "4.x",
+				DateCreated:       parseTime("2018-11-06T21:20:07.941Z"),
+				DSN: sentry.ProjectKeyDSN{
+					CDN:      "https://sentry.io/js-sdk-loader/cec9dfceb0b74c1c9a5e3c135585f364.min.js",
+					CSP:      "https://sentry.io/api/2/csp-report/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+					Minidump: "https://sentry.io/api/2/minidump/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+					Public:   "https://cec9dfceb0b74c1c9a5e3c135585f364@sentry.io/2",
+					Secret:   "https://cec9dfceb0b74c1c9a5e3c135585f364:4f6a592349e249c5906918393766718d@sentry.io/2",
+					Security: "https://sentry.io/api/2/security/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+				},
+				ID:        "cec9dfceb0b74c1c9a5e3c135585f364",
+				IsActive:  true,
+				Label:     "Fabulous Key",
+				Name:      "Fabulous Key",
+				ProjectID: 2,
+				Public:    "cec9dfceb0b74c1c9a5e3c135585f364",
+				RateLimit: sentry.ProjectKeyRateLimit{
+					Window: 0,
+					Count:  0,
+				},
+				Secret: "4f6a592349e249c5906918393766718d",
+			}))
+		})
+
+		Context("when project key does not exist", func() {
+			handler.HandleFunc("/api/0/projects/organization/project/keys/invalid/",
+				testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusNotFound)
+					w.Write(newAPIError(sentry.APIError{"detail": "The requested resource does not exist"}))
+				}),
+			)
+
+			BeforeEach(func() {
+				keyID = "invalid"
+			})
+
+			It("returns a 404 Not Found error", func() {
+				Expect(err).To(MatchError(sentry.APIError{"detail": "The requested resource does not exist"}))
+				Expect(resp.Response).To(HaveHTTPStatus(http.StatusNotFound))
+			})
+		})
+	})
+
+	Describe("CreateKey", func() {
+		var (
+			params *sentry.CreateProjectKeyParams
+
+			key  *sentry.ProjectKey
+			resp *sentry.Response
+			err  error
+		)
+
+		handler, client := setup()
+		fixture, err := ioutil.ReadFile("fixtures/project_keys/create.json")
+		Expect(err).NotTo(HaveOccurred())
+
+		handler.HandleFunc("/api/0/projects/organization/project/keys/",
+			testHandler(http.MethodPost, func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusCreated)
+				w.Write(fixture)
+			}),
+		)
+
+		BeforeEach(func() {
+			params = &sentry.CreateProjectKeyParams{
+				Name: "test",
+			}
+		})
+
+		JustBeforeEach(func() {
+			key, resp, err = client.Projects.CreateKey("organization", "project", params)
+		})
+
+		It("returns a 201 Created response", func() {
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.Response).To(HaveHTTPStatus(http.StatusCreated))
+
+			Expect(key).To(Equal(&sentry.ProjectKey{
+				BrowserSDK: sentry.ProjectKeyBrowserSDK{
+					Choices: [][]string{{"latest", "latest"}, {"4.x", "4.x"}},
+				},
+				BrowserSDKVersion: "4.x",
+				DateCreated:       parseTime("2018-11-06T21:20:07.941Z"),
+				DSN: sentry.ProjectKeyDSN{
+					CDN:      "https://sentry.io/js-sdk-loader/cec9dfceb0b74c1c9a5e3c135585f364.min.js",
+					CSP:      "https://sentry.io/api/2/csp-report/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+					Minidump: "https://sentry.io/api/2/minidump/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+					Public:   "https://cec9dfceb0b74c1c9a5e3c135585f364@sentry.io/2",
+					Secret:   "https://cec9dfceb0b74c1c9a5e3c135585f364:4f6a592349e249c5906918393766718d@sentry.io/2",
+					Security: "https://sentry.io/api/2/security/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+				},
+				ID:        "cec9dfceb0b74c1c9a5e3c135585f364",
+				IsActive:  true,
+				Label:     "Fabulous Key",
+				Name:      "Fabulous Key",
+				ProjectID: 2,
+				Public:    "cec9dfceb0b74c1c9a5e3c135585f364",
+				RateLimit: sentry.ProjectKeyRateLimit{
+					Window: 0,
+					Count:  0,
+				},
+				Secret: "4f6a592349e249c5906918393766718d",
+			}))
+		})
+	})
+
+	Describe("UpdateKey", func() {
+		var (
+			params *sentry.UpdateProjectKeyParams
+
+			key  *sentry.ProjectKey
+			resp *sentry.Response
+			err  error
+		)
+
+		handler, client := setup()
+		fixture, err := ioutil.ReadFile("fixtures/project_keys/update.json")
+		Expect(err).NotTo(HaveOccurred())
+
+		handler.HandleFunc("/api/0/projects/organization/project/keys/test/",
+			testHandler(http.MethodPut, func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+				w.Write(fixture)
+			}),
+		)
+
+		BeforeEach(func() {
+			params = &sentry.UpdateProjectKeyParams{
+				Name: "test",
+			}
+		})
+
+		JustBeforeEach(func() {
+			key, resp, err = client.Projects.UpdateKey("organization", "project", "test", params)
+		})
+
+		It("returns a 200 OK response", func() {
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
+
+			Expect(key).To(Equal(&sentry.ProjectKey{
+				BrowserSDK: sentry.ProjectKeyBrowserSDK{
+					Choices: [][]string{{"latest", "latest"}, {"4.x", "4.x"}},
+				},
+				BrowserSDKVersion: "4.x",
+				DateCreated:       parseTime("2018-11-06T21:20:07.941Z"),
+				DSN: sentry.ProjectKeyDSN{
+					CDN:      "https://sentry.io/js-sdk-loader/cec9dfceb0b74c1c9a5e3c135585f364.min.js",
+					CSP:      "https://sentry.io/api/2/csp-report/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+					Minidump: "https://sentry.io/api/2/minidump/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+					Public:   "https://cec9dfceb0b74c1c9a5e3c135585f364@sentry.io/2",
+					Secret:   "https://cec9dfceb0b74c1c9a5e3c135585f364:4f6a592349e249c5906918393766718d@sentry.io/2",
+					Security: "https://sentry.io/api/2/security/?sentry_key=cec9dfceb0b74c1c9a5e3c135585f364",
+				},
+				ID:        "cec9dfceb0b74c1c9a5e3c135585f364",
+				IsActive:  true,
+				Label:     "Fabulous Key",
+				Name:      "Fabulous Key",
+				ProjectID: 2,
+				Public:    "cec9dfceb0b74c1c9a5e3c135585f364",
+				RateLimit: sentry.ProjectKeyRateLimit{
+					Window: 0,
+					Count:  0,
+				},
+				Secret: "4f6a592349e249c5906918393766718d",
+			}))
+		})
+	})
+
+	Describe("DeleteKey", func() {
+		var (
+			keyID string
+
+			resp *sentry.Response
+			err  error
+		)
+
+		handler, client := setup()
+
+		handler.HandleFunc("/api/0/projects/organization/project/keys/valid/",
+			testHandler(http.MethodDelete, func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusNoContent)
+			}),
+		)
+
+		BeforeEach(func() {
+			keyID = "valid"
+		})
+
+		JustBeforeEach(func() {
+			resp, err = client.Projects.DeleteKey("organization", "project", keyID)
+		})
+
+		It("returns a 204 No Content response", func() {
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.Response).To(HaveHTTPStatus(http.StatusNoContent))
+		})
+
+		Context("when project key does not exist", func() {
+			handler.HandleFunc("/api/0/projects/organization/project/keys/invalid/",
+				testHandler(http.MethodDelete, func(w http.ResponseWriter, r *http.Request) {
+					w.WriteHeader(http.StatusNotFound)
+					w.Write(newAPIError(sentry.APIError{"detail": "The requested resource does not exist"}))
+				}),
+			)
+
+			BeforeEach(func() {
+				keyID = "invalid"
+			})
+
+			It("returns a 404 Not Found error", func() {
+				Expect(err).To(MatchError(sentry.APIError{"detail": "The requested resource does not exist"}))
+				Expect(resp.Response).To(HaveHTTPStatus(http.StatusNotFound))
+			})
+		})
+	})
 })

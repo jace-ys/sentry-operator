@@ -83,3 +83,103 @@ func (s *ProjectsService) Delete(organizationSlug, projectSlug string) (*Respons
 	resp, err := s.client.do(req, nil)
 	return resp, err
 }
+
+type ProjectKey struct {
+	BrowserSDK        ProjectKeyBrowserSDK `json:"browserSdk"`
+	BrowserSDKVersion string               `json:"browserSdkVersion"`
+	DateCreated       time.Time            `json:"dateCreated"`
+	DSN               ProjectKeyDSN        `json:"dsn"`
+	ID                string               `json:"id"`
+	IsActive          bool                 `json:"isActive"`
+	Label             string               `json:"label"`
+	Name              string               `json:"name"`
+	ProjectID         int                  `json:"projectId"`
+	Public            string               `json:"public"`
+	RateLimit         ProjectKeyRateLimit  `json:"rateLimit"`
+	Secret            string               `json:"secret"`
+}
+
+type ProjectKeyBrowserSDK struct {
+	Choices [][]string `json:"choices"`
+}
+
+type ProjectKeyDSN struct {
+	CDN      string `json:"cdn"`
+	CSP      string `json:"csp"`
+	Minidump string `json:"minidump"`
+	Public   string `json:"public"`
+	Secret   string `json:"secret"`
+	Security string `json:"security"`
+}
+
+type ProjectKeyRateLimit struct {
+	Window int `json:"window"`
+	Count  int `json:"count"`
+}
+
+func (s *ProjectsService) ListKeys(organizationSlug, projectSlug string) ([]ProjectKey, *Response, error) {
+	endpoint := fmt.Sprintf("/projects/%s/%s/keys", organizationSlug, projectSlug)
+	req, err := s.client.newRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	keys := new([]ProjectKey)
+	resp, err := s.client.do(req, keys)
+	return *keys, resp, err
+}
+
+func (s *ProjectsService) GetKey(organizationSlug, projectSlug, keyID string) (*ProjectKey, *Response, error) {
+	endpoint := fmt.Sprintf("/projects/%s/%s/keys/%s", organizationSlug, projectSlug, keyID)
+	req, err := s.client.newRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	key := new(ProjectKey)
+	resp, err := s.client.do(req, key)
+	return key, resp, err
+}
+
+type CreateProjectKeyParams struct {
+	Name string `json:"name,omitempty"`
+}
+
+func (s *ProjectsService) CreateKey(organizationSlug, projectSlug string, params *CreateProjectKeyParams) (*ProjectKey, *Response, error) {
+	endpoint := fmt.Sprintf("/projects/%s/%s/keys", organizationSlug, projectSlug)
+	req, err := s.client.newRequest(http.MethodPost, endpoint, params)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	key := new(ProjectKey)
+	resp, err := s.client.do(req, key)
+	return key, resp, err
+}
+
+type UpdateProjectKeyParams struct {
+	Name string `json:"name,omitempty"`
+}
+
+func (s *ProjectsService) UpdateKey(organizationSlug, projectSlug, keyID string, params *UpdateProjectKeyParams) (*ProjectKey, *Response, error) {
+	endpoint := fmt.Sprintf("/projects/%s/%s/keys/%s", organizationSlug, projectSlug, keyID)
+	req, err := s.client.newRequest(http.MethodPut, endpoint, params)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	key := new(ProjectKey)
+	resp, err := s.client.do(req, key)
+	return key, resp, err
+}
+
+func (s *ProjectsService) DeleteKey(organizationSlug, projectSlug, keyID string) (*Response, error) {
+	endpoint := fmt.Sprintf("/projects/%s/%s/keys/%s", organizationSlug, projectSlug, keyID)
+	req, err := s.client.newRequest(http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.do(req, nil)
+	return resp, err
+}
