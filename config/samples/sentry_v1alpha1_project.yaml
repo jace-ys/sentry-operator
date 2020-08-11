@@ -4,5 +4,6 @@ kind: Project
 metadata:
   name: project-sample
 spec:
-  # Add fields here
-  foo: bar
+  teamRef: jaceys
+  name: test
+  slug: test

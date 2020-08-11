@@ -8,6 +8,13 @@ metadata:
   creationTimestamp: null
   name: projects.sentry.kubernetes.jaceys.me
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  - JSONPath: .status.condition
+    name: Status
+    type: string
   group: sentry.kubernetes.jaceys.me
   names:
     kind: Project
@@ -15,6 +22,8 @@ spec:
     plural: projects
     singular: project
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: Project is the Schema for the projects API
@@ -34,13 +43,25 @@ spec:
         spec:
           description: ProjectSpec defines the desired state of Project
           properties:
-            foo:
-              description: Foo is an example field of Project. Edit Project_types.go
-                to remove/update
+            name:
+              type: string
+            slug:
+              type: string
+            teamRef:
               type: string
           type: object
         status:
           description: ProjectStatus defines the observed state of Project
+          properties:
+            condition:
+              type: string
+            dateCreated:
+              format: date-time
+              type: string
+            id:
+              type: string
+            message:
+              type: string
           type: object
       type: object
   version: v1alpha1

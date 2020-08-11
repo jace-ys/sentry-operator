@@ -23,7 +23,10 @@ manager: generate fmt vet
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests
-	go run ./main.go
+	go run ./main.go --sentry-token ${SENTRY_TOKEN} --sentry-organization ${SENTRY_ORGANIZATION}
+
+cluster:
+	kind create cluster --image kindest/node:v1.16.9
 
 # Install CRDs into a cluster
 install: manifests
