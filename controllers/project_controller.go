@@ -197,7 +197,7 @@ func (r *ProjectReconciler) handleUpdate(ctx context.Context, project *sentryv1a
 	return sProject, retryableHTTPError(resp.Response, err)
 }
 
-// handleError is a helper function that annotates our Project status with ProjectConditionError and the error message.
+// handleError is a helper function for annotating our Project status with ProjectConditionError and the error message.
 // It also checks if the error is retryable, ignoring non-retryable ones so we don't requeue our reconcile key.
 func (r *ProjectReconciler) handleError(ctx context.Context, project *sentryv1alpha1.Project, err error) error {
 	project.Status.Condition = sentryv1alpha1.ProjectConditionError

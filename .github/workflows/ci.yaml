@@ -42,3 +42,24 @@ jobs:
 
       - name: Build image
         run: make docker-build
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "1.13"
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-sentry-operator-${{ hashFiles('go.sum') }}
+          restore-keys: ${{ runner.os }}-sentry-operator-
+
+      - name: Install tools
+        run: ./scripts/install.sh
+
+      - name: Ensure generated release
+        run: |
+          make release
+          git add -N . && git diff --exit-code --name-only

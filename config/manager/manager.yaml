@@ -25,11 +25,14 @@ spec:
     spec:
       containers:
         - command:
-            - /manager
+            - /sentry-operator
           args:
-            - --enable-leader-election
+            - --leader-election
           image: controller:latest
           name: manager
+          envFrom:
+            - secretRef:
+                name: sentry-operator-config
           resources:
             limits:
               cpu: 100m
