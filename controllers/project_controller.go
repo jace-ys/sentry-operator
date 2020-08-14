@@ -31,6 +31,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-logr/logr"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -53,7 +54,7 @@ type ProjectReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	Sentry *SentryClient
+	Sentry *Sentry
 }
 
 func (r *ProjectReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -82,7 +83,7 @@ func (r *ProjectReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	hasFinalizer := containsFinalizer(project.GetFinalizers(), ProjectFinalizerName)
 
-	if project.Status.DateCreated.IsZero() {
+	if project.Status.LastSynced.IsZero() {
 		if _, err := r.handleCreate(ctx, &project, hasFinalizer); err != nil {
 			log.Error(err, "failed to create Project")
 			return ctrl.Result{}, r.handleError(ctx, &project, err)
@@ -133,7 +134,7 @@ func (r *ProjectReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 // ID. It returns an ErrOutOfSync error when it can't find a project with the expected ID, allowing us to
 // correct drift in cases where the project was deleted externally of the controller.
 func (r *ProjectReconciler) getExistingState(project sentryv1alpha1.Project) (*sentry.Project, error) {
-	sProjects, resp, err := r.Sentry.Client.Teams.ListProjects(r.Sentry.Organization, project.Spec.TeamRef)
+	sProjects, resp, err := r.Sentry.Client.Teams.ListProjects(r.Sentry.Organization, project.Spec.Team)
 	if err != nil {
 		return nil, retryableHTTPError(resp.Response, err)
 	}
@@ -148,7 +149,7 @@ func (r *ProjectReconciler) getExistingState(project sentryv1alpha1.Project) (*s
 }
 
 func (r *ProjectReconciler) handleCreate(ctx context.Context, project *sentryv1alpha1.Project, hasFinalizer bool) (*sentry.Project, error) {
-	sProject, resp, err := r.Sentry.Client.Teams.CreateProject(r.Sentry.Organization, project.Spec.TeamRef, &sentry.CreateProjectParams{
+	sProject, resp, err := r.Sentry.Client.Teams.CreateProject(r.Sentry.Organization, project.Spec.Team, &sentry.CreateProjectParams{
 		Name: project.Spec.Name,
 		Slug: project.Spec.Slug,
 	})
@@ -157,8 +158,8 @@ func (r *ProjectReconciler) handleCreate(ctx context.Context, project *sentryv1a
 	}
 
 	project.Status.Condition = sentryv1alpha1.ProjectConditionCreated
-	project.Status.DateCreated = &metav1.Time{Time: sProject.DateCreated}
 	project.Status.ID = sProject.ID
+	project.Status.LastSynced = &metav1.Time{Time: time.Now()}
 	if err := r.Status().Update(ctx, project); err != nil {
 		return nil, retryableError{err}
 	}
@@ -194,7 +195,19 @@ func (r *ProjectReconciler) handleUpdate(ctx context.Context, project *sentryv1a
 		Name: project.Spec.Name,
 		Slug: project.Spec.Slug,
 	})
-	return sProject, retryableHTTPError(resp.Response, err)
+	if err != nil {
+		return nil, retryableHTTPError(resp.Response, err)
+	}
+
+	project.Status.Condition = sentryv1alpha1.ProjectConditionCreated
+	project.Status.Message = ""
+	project.Status.ID = sProject.ID
+	project.Status.LastSynced = &metav1.Time{Time: time.Now()}
+	if err := r.Status().Update(ctx, project); err != nil {
+		return nil, retryableError{err}
+	}
+
+	return sProject, nil
 }
 
 // handleError is a helper function for annotating our Project status with ProjectConditionError and the error message.

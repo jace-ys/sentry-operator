@@ -47,7 +47,7 @@ spec:
               type: string
             slug:
               type: string
-            teamRef:
+            team:
               type: string
           type: object
         status:
@@ -55,10 +55,10 @@ spec:
           properties:
             condition:
               type: string
-            dateCreated:
-              format: date-time
-              type: string
             id:
+              type: string
+            lastSynced:
+              format: date-time
               type: string
             message:
               type: string

@@ -32,9 +32,9 @@ import (
 
 // ProjectSpec defines the desired state of Project
 type ProjectSpec struct {
-	TeamRef string `json:"teamRef,omitempty"`
-	Name    string `json:"name,omitempty"`
-	Slug    string `json:"slug,omitempty"`
+	Team string `json:"team,omitempty"`
+	Name string `json:"name,omitempty"`
+	Slug string `json:"slug,omitempty"`
 }
 
 type ProjectCondition string
@@ -49,8 +49,8 @@ type ProjectStatus struct {
 	Condition ProjectCondition `json:"condition,omitempty"`
 	Message   string           `json:"message,omitempty"`
 
-	DateCreated *metav1.Time `json:"dateCreated,omitempty"`
-	ID          string       `json:"id,omitempty"`
+	ID         string       `json:"id,omitempty"`
+	LastSynced *metav1.Time `json:"lastSynced,omitempty"`
 }
 
 // +kubebuilder:object:root=true

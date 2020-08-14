@@ -86,9 +86,12 @@ func main() {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Project"),
 		Scheme: mgr.GetScheme(),
-		Sentry: &controllers.SentryClient{
-			Client:       sentryClient,
+		Sentry: &controllers.Sentry{
 			Organization: *sentryOrganization,
+			Client: &controllers.SentryClient{
+				Teams:    sentryClient.Teams,
+				Projects: sentryClient.Projects,
+			},
 		},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Project")

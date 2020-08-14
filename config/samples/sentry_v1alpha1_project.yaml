@@ -4,6 +4,6 @@ kind: Project
 metadata:
   name: project-sample
 spec:
-  teamRef: jaceys
+  team: jaceys
   name: test
   slug: test
