@@ -20,7 +20,7 @@ var _ = Describe("ProjectsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/projects/list.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/projects/",
 			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +34,7 @@ var _ = Describe("ProjectsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(resp.NextPage).To(Equal(&sentry.Page{
@@ -94,7 +94,7 @@ var _ = Describe("ProjectsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/projects/get.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/projects/organization/valid/",
 			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
@@ -111,7 +111,7 @@ var _ = Describe("ProjectsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(project).To(Equal(&sentry.Project{
@@ -191,7 +191,7 @@ var _ = Describe("ProjectsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/projects/update.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/projects/organization/test/",
 			testHandler(http.MethodPut, func(w http.ResponseWriter, r *http.Request) {
@@ -219,7 +219,7 @@ var _ = Describe("ProjectsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(project).To(Equal(&sentry.Project{
@@ -306,7 +306,7 @@ var _ = Describe("ProjectsService", func() {
 		})
 
 		It("returns a 204 No Content response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusNoContent))
 		})
 
@@ -338,7 +338,7 @@ var _ = Describe("ProjectsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/project_keys/list.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/projects/organization/project/keys/",
 			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
@@ -352,7 +352,7 @@ var _ = Describe("ProjectsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(resp.NextPage).To(Equal(&sentry.Page{
@@ -406,7 +406,7 @@ var _ = Describe("ProjectsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/project_keys/get.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/projects/organization/project/keys/valid/",
 			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
@@ -423,7 +423,7 @@ var _ = Describe("ProjectsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(key).To(Equal(&sentry.ProjectKey{
@@ -484,7 +484,7 @@ var _ = Describe("ProjectsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/project_keys/create.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/projects/organization/project/keys/",
 			testHandler(http.MethodPost, func(w http.ResponseWriter, r *http.Request) {
@@ -504,7 +504,7 @@ var _ = Describe("ProjectsService", func() {
 		})
 
 		It("returns a 201 Created response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusCreated))
 
 			Expect(key).To(Equal(&sentry.ProjectKey{
@@ -547,7 +547,7 @@ var _ = Describe("ProjectsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/project_keys/update.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/projects/organization/project/keys/test/",
 			testHandler(http.MethodPut, func(w http.ResponseWriter, r *http.Request) {
@@ -567,7 +567,7 @@ var _ = Describe("ProjectsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(key).To(Equal(&sentry.ProjectKey{
@@ -624,7 +624,7 @@ var _ = Describe("ProjectsService", func() {
 		})
 
 		It("returns a 204 No Content response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusNoContent))
 		})
 

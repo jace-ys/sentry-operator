@@ -21,7 +21,7 @@ var _ = Describe("TeamsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/teams/list.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/organizations/organization/teams/",
 			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +35,7 @@ var _ = Describe("TeamsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(resp.NextPage).To(Equal(&sentry.Page{
@@ -77,7 +77,7 @@ var _ = Describe("TeamsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/teams/get.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/teams/organization/valid/",
 			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +94,7 @@ var _ = Describe("TeamsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(team).To(Equal(&sentry.Team{
@@ -143,7 +143,7 @@ var _ = Describe("TeamsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/teams/create.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/organizations/organization/teams/",
 			testHandler(http.MethodPost, func(w http.ResponseWriter, r *http.Request) {
@@ -155,7 +155,7 @@ var _ = Describe("TeamsService", func() {
 
 				var rParams sentry.CreateTeamParams
 				err := json.NewDecoder(r.Body).Decode(&rParams)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				apiErr := make(sentry.APIError)
 				if rParams.Name == "" {
@@ -186,7 +186,7 @@ var _ = Describe("TeamsService", func() {
 		})
 
 		It("returns a 201 Created response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusCreated))
 
 			Expect(team).To(Equal(&sentry.Team{
@@ -241,7 +241,7 @@ var _ = Describe("TeamsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/teams/update.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/teams/organization/test/",
 			testHandler(http.MethodPut, func(w http.ResponseWriter, r *http.Request) {
@@ -269,7 +269,7 @@ var _ = Describe("TeamsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(team).To(Equal(&sentry.Team{
@@ -323,7 +323,7 @@ var _ = Describe("TeamsService", func() {
 		})
 
 		It("returns a 204 No Content response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusNoContent))
 		})
 
@@ -355,7 +355,7 @@ var _ = Describe("TeamsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/teams/list-projects.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/teams/organization/team/projects/",
 			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
@@ -369,7 +369,7 @@ var _ = Describe("TeamsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(resp.NextPage).To(Equal(&sentry.Page{
@@ -419,7 +419,7 @@ var _ = Describe("TeamsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/teams/create-project.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/teams/organization/team/projects/",
 			testHandler(http.MethodPost, func(w http.ResponseWriter, r *http.Request) {
@@ -431,7 +431,7 @@ var _ = Describe("TeamsService", func() {
 
 				var rParams sentry.CreateProjectParams
 				err := json.NewDecoder(r.Body).Decode(&rParams)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				apiErr := make(sentry.APIError)
 				if rParams.Name == "" {
@@ -462,7 +462,7 @@ var _ = Describe("TeamsService", func() {
 		})
 
 		It("returns a 201 Created response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusCreated))
 
 			Expect(project).To(Equal(&sentry.Project{

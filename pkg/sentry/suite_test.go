@@ -55,7 +55,7 @@ func newAPIError(apiErr sentry.APIError) []byte {
 	defer GinkgoRecover()
 
 	data, err := json.Marshal(apiErr)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	return data
 }
@@ -64,7 +64,7 @@ func parseTime(value string) time.Time {
 	defer GinkgoRecover()
 
 	result, err := time.Parse(time.RFC3339, value)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	return result
 }

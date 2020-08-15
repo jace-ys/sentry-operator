@@ -20,7 +20,7 @@ var _ = Describe("TeamsService", func() {
 
 		handler, client := setup()
 		fixture, err := ioutil.ReadFile("fixtures/organizations/list-projects.json")
-		Expect(err).NotTo(HaveOccurred())
+		Expect(err).ToNot(HaveOccurred())
 
 		handler.HandleFunc("/api/0/organizations/organization/projects/",
 			testHandler(http.MethodGet, func(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +34,7 @@ var _ = Describe("TeamsService", func() {
 		})
 
 		It("returns a 200 OK response", func() {
-			Expect(err).NotTo(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(resp.NextPage).To(Equal(&sentry.Page{
