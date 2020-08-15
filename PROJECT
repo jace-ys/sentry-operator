@@ -4,4 +4,7 @@ resources:
 - group: sentry
   kind: Project
   version: v1alpha1
+- group: sentry
+  kind: Team
+  version: v1alpha1
 version: "2"

@@ -76,32 +76,45 @@ func main() {
 		LeaderElectionID:   "sentry.kubernetes.jaceys.me",
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
-		os.Exit(1)
+		exit(err, "unable to start manager")
 	}
 
 	sentryClient := sentry.NewClient(*sentryToken, sentry.WithSentryURL(*sentryURL))
+	sentry := &controllers.Sentry{
+		Organization: *sentryOrganization,
+		Client: &controllers.SentryClient{
+			Teams:    sentryClient.Teams,
+			Projects: sentryClient.Projects,
+		},
+	}
 
 	if err = (&controllers.ProjectReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Project"),
 		Scheme: mgr.GetScheme(),
-		Sentry: &controllers.Sentry{
-			Organization: *sentryOrganization,
-			Client: &controllers.SentryClient{
-				Teams:    sentryClient.Teams,
-				Projects: sentryClient.Projects,
-			},
-		},
+		Sentry: sentry,
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Project")
-		os.Exit(1)
+		exit(err, "unable to create controller", "controller", "Project")
 	}
+
+	if err = (&controllers.TeamReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Team"),
+		Scheme: mgr.GetScheme(),
+		Sentry: sentry,
+	}).SetupWithManager(mgr); err != nil {
+		exit(err, "unable to create controller", "controller", "Team")
+	}
+
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
-		os.Exit(1)
+		exit(err, "problem running manager")
 	}
+}
+
+func exit(err error, msg string, keysAndValues ...interface{}) {
+	setupLog.Error(err, msg, keysAndValues...)
+	os.Exit(1)
 }

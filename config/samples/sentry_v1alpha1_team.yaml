@@ -1,0 +1,8 @@
+---
+apiVersion: sentry.kubernetes.jaceys.me/v1alpha1
+kind: Team
+metadata:
+  name: team-sample
+spec:
+  name: test
+  slug: test

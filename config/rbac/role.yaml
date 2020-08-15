@@ -26,3 +26,23 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - sentry.kubernetes.jaceys.me
+  resources:
+  - teams
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sentry.kubernetes.jaceys.me
+  resources:
+  - teams/status
+  verbs:
+  - get
+  - patch
+  - update
