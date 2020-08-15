@@ -1,0 +1,21 @@
+---
+# Permissions for end users to view projectkeys.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: projectkey-viewer-role
+rules:
+  - apiGroups:
+      - sentry.kubernetes.jaceys.me
+    resources:
+      - projectkeys
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - sentry.kubernetes.jaceys.me
+    resources:
+      - projectkeys/status
+    verbs:
+      - get

@@ -1,0 +1,25 @@
+---
+# Permissions for end users to edit projectkeys.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: projectkey-editor-role
+rules:
+  - apiGroups:
+      - sentry.kubernetes.jaceys.me
+    resources:
+      - projectkeys
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - sentry.kubernetes.jaceys.me
+    resources:
+      - projectkeys/status
+    verbs:
+      - get

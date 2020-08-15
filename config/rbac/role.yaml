@@ -9,6 +9,26 @@ rules:
 - apiGroups:
   - sentry.kubernetes.jaceys.me
   resources:
+  - projectkeys
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sentry.kubernetes.jaceys.me
+  resources:
+  - projectkeys/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - sentry.kubernetes.jaceys.me
+  resources:
   - projects
   verbs:
   - create

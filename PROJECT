@@ -5,6 +5,9 @@ resources:
   kind: Project
   version: v1alpha1
 - group: sentry
+  kind: ProjectKey
+  version: v1alpha1
+- group: sentry
   kind: Team
   version: v1alpha1
 version: "2"

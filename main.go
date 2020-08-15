@@ -97,6 +97,15 @@ func main() {
 		exit(err, "unable to create controller", "controller", "Project")
 	}
 
+	if err = (&controllers.ProjectKeyReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ProjectKey"),
+		Scheme: mgr.GetScheme(),
+		Sentry: sentry,
+	}).SetupWithManager(mgr); err != nil {
+		exit(err, "unable to create controller", "controller", "ProjectKey")
+	}
+
 	if err = (&controllers.TeamReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Team"),

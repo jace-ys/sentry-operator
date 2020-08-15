@@ -4,6 +4,7 @@
 # It should be run by config/default
 resources:
   - bases/sentry.kubernetes.jaceys.me_projects.yaml
+  - bases/sentry.kubernetes.jaceys.me_projectkeys.yaml
   - bases/sentry.kubernetes.jaceys.me_teams.yaml
   # +kubebuilder:scaffold:crdkustomizeresource
 
@@ -11,11 +12,13 @@ patchesStrategicMerge:
   # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
   # patches here are for enabling the conversion webhook for each CRD
   # - patches/webhook_in_projects.yaml
+  # - patches/webhook_in_projectkeys.yaml
   # - patches/webhook_in_teams.yaml
   # +kubebuilder:scaffold:crdkustomizewebhookpatch
   # [CERTMANAGER] To enable webhook, uncomment all the sections with [CERTMANAGER] prefix.
   # patches here are for enabling the CA injection for each CRD
   # - patches/cainjection_in_projects.yaml
+  # - patches/cainjection_in_projectkeys.yaml
   # - patches/cainjection_in_teams.yaml
   # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 

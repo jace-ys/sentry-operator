@@ -1,0 +1,7 @@
+---
+apiVersion: sentry.kubernetes.jaceys.me/v1alpha1
+kind: ProjectKey
+metadata:
+  name: projectkey-sample
+spec:
+  name: bar
