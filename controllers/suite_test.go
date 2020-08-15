@@ -29,8 +29,9 @@ var (
 )
 
 var (
-	fakeSentryProjects *controllersfakes.FakeSentryProjects
-	fakeSentryTeams    *controllersfakes.FakeSentryTeams
+	fakeSentryOrganizations *controllersfakes.FakeSentryOrganizations
+	fakeSentryProjects      *controllersfakes.FakeSentryProjects
+	fakeSentryTeams         *controllersfakes.FakeSentryTeams
 )
 
 func TestAPIs(t *testing.T) {
@@ -69,6 +70,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
+	fakeSentryOrganizations = new(controllersfakes.FakeSentryOrganizations)
 	fakeSentryProjects = new(controllersfakes.FakeSentryProjects)
 	fakeSentryTeams = new(controllersfakes.FakeSentryTeams)
 
@@ -78,8 +80,9 @@ var _ = BeforeSuite(func() {
 		Sentry: &controllers.Sentry{
 			Organization: "organization",
 			Client: &controllers.SentryClient{
-				Projects: fakeSentryProjects,
-				Teams:    fakeSentryTeams,
+				Organizations: fakeSentryOrganizations,
+				Projects:      fakeSentryProjects,
+				Teams:         fakeSentryTeams,
 			},
 		},
 	}).SetupWithManager(k8sManager)
@@ -101,12 +104,15 @@ var _ = AfterSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 })
 
-func testSentryProject(id, name string) *sentry.Project {
+func testSentryProject(id, team, name string) *sentry.Project {
 	return &sentry.Project{
 		DateCreated: time.Now(),
 		ID:          id,
 		Name:        name,
 		Slug:        name,
+		Team: sentry.Team{
+			Slug: team,
+		},
 	}
 }
 

@@ -45,8 +45,8 @@ const (
 
 // TeamStatus defines the observed state of Team
 type TeamStatus struct {
-	Condition ProjectCondition `json:"condition,omitempty"`
-	Message   string           `json:"message,omitempty"`
+	Condition TeamCondition `json:"condition,omitempty"`
+	Message   string        `json:"message,omitempty"`
 
 	ID         string       `json:"id,omitempty"`
 	LastSynced *metav1.Time `json:"lastSynced,omitempty"`

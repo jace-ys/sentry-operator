@@ -55,6 +55,7 @@ func (s *ProjectsService) Get(organizationSlug, projectSlug string) (*Project, *
 type UpdateProjectParams struct {
 	Name            string `json:"name,omitempty"`
 	Slug            string `json:"slug,omitempty"`
+	Team            string `json:"team,omitempty"`
 	Platform        string `json:"platform,omitempty"`
 	IsBookmarked    *bool  `json:"isBookmarked,omitempty"`
 	DigestsMinDelay int    `json:"digestsMinDelay,omitempty"`

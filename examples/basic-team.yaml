@@ -1,7 +1,8 @@
 ---
 apiVersion: sentry.kubernetes.jaceys.me/v1alpha1
-kind: ProjectKey
+kind: Team
 metadata:
-  name: projectkey-sample
+  name: basic-team
 spec:
-  name: bar
+  name: test
+  slug: test

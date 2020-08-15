@@ -56,7 +56,7 @@ var _ = Describe("ProjectReconciler", func() {
 		}
 
 		BeforeEach(func() {
-			created := testSentryProject("12345", request.Spec.Name)
+			created := testSentryProject("12345", request.Spec.Team, request.Spec.Name)
 			fakeSentryTeams.CreateProjectReturns(created, newSentryResponse(http.StatusOK), nil)
 		})
 
@@ -103,12 +103,12 @@ var _ = Describe("ProjectReconciler", func() {
 		BeforeEach(func() {
 			Expect(k8sClient.Get(ctx, lookupKey, project)).To(Succeed())
 
-			existing = testSentryProject("12345", project.Spec.Name)
-			fakeSentryTeams.ListProjectsReturns([]sentry.Project{*existing}, newSentryResponse(http.StatusOK), nil)
+			existing = testSentryProject("12345", project.Spec.Team, project.Spec.Name)
+			fakeSentryOrganizations.ListProjectsReturns([]sentry.Project{*existing}, newSentryResponse(http.StatusOK), nil)
 
 			project.Spec.Name = "test-project-update"
 			project.Spec.Slug = "test-project-update"
-			fakeSentryProjects.UpdateReturns(testSentryProject("12345", project.Spec.Name), newSentryResponse(http.StatusOK), nil)
+			fakeSentryProjects.UpdateReturns(testSentryProject("12345", project.Spec.Team, project.Spec.Name), newSentryResponse(http.StatusOK), nil)
 		})
 
 		Context("the Sentry client returns an error", func() {
@@ -140,9 +140,8 @@ var _ = Describe("ProjectReconciler", func() {
 				Expect(project.Spec).To(Equal(project.Spec))
 
 				By("invoked the Sentry client's .Teams.ListProjects method")
-				organizationSlug, teamSlug := fakeSentryTeams.ListProjectsArgsForCall(fakeSentryTeams.ListProjectsCallCount() - 1)
+				organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
-				Expect(teamSlug).To(Equal(project.Spec.Team))
 
 				By("invoked the Sentry client's .Projects.Update method")
 				organizationSlug, projectSlug, params := fakeSentryProjects.UpdateArgsForCall(fakeSentryProjects.UpdateCallCount() - 1)
@@ -180,9 +179,8 @@ var _ = Describe("ProjectReconciler", func() {
 			Expect(project.Status.ID).To(Equal("12345"))
 
 			By("invoked the Sentry client's .Teams.ListProjects method")
-			organizationSlug, teamSlug := fakeSentryTeams.ListProjectsArgsForCall(fakeSentryTeams.ListProjectsCallCount() - 1)
+			organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
-			Expect(teamSlug).To(Equal(project.Spec.Team))
 
 			By("invoked the Sentry client .Projects.Update method")
 			organizationSlug, projectSlug, params := fakeSentryProjects.UpdateArgsForCall(fakeSentryProjects.UpdateCallCount() - 1)
@@ -203,8 +201,8 @@ var _ = Describe("ProjectReconciler", func() {
 		BeforeEach(func() {
 			Expect(k8sClient.Get(ctx, lookupKey, project)).To(Succeed())
 
-			existing = testSentryProject("12345", project.Spec.Name)
-			fakeSentryTeams.ListProjectsReturns([]sentry.Project{*existing}, newSentryResponse(http.StatusOK), nil)
+			existing = testSentryProject("12345", project.Spec.Team, project.Spec.Name)
+			fakeSentryOrganizations.ListProjectsReturns([]sentry.Project{*existing}, newSentryResponse(http.StatusOK), nil)
 			fakeSentryProjects.DeleteReturns(newSentryResponse(http.StatusNoContent), nil)
 		})
 
@@ -216,9 +214,8 @@ var _ = Describe("ProjectReconciler", func() {
 			}, timeout, interval).ShouldNot(Succeed())
 
 			By("the Sentry client .Teams.ListProjects method was called")
-			organizationSlug, teamSlug := fakeSentryTeams.ListProjectsArgsForCall(fakeSentryTeams.ListProjectsCallCount() - 1)
+			organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
-			Expect(teamSlug).To(Equal(project.Spec.Team))
 
 			By("the Sentry client .Projects.Delete method was called")
 			organizationSlug, projectSlug := fakeSentryProjects.DeleteArgsForCall(fakeSentryProjects.DeleteCallCount() - 1)

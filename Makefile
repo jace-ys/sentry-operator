@@ -28,6 +28,9 @@ run: generate fmt vet manifests
 cluster:
 	kind create cluster --image kindest/node:v1.16.9
 
+cluster-load: docker-build
+	kind load docker-image ${IMG}
+
 # Install CRDs into a cluster
 install: manifests
 	kustomize build config/crd | kubectl apply -f -

@@ -83,8 +83,9 @@ func main() {
 	sentry := &controllers.Sentry{
 		Organization: *sentryOrganization,
 		Client: &controllers.SentryClient{
-			Teams:    sentryClient.Teams,
-			Projects: sentryClient.Projects,
+			Organizations: sentryClient.Organizations,
+			Projects:      sentryClient.Projects,
+			Teams:         sentryClient.Teams,
 		},
 	}
 

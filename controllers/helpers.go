@@ -8,8 +8,14 @@ type Sentry struct {
 }
 
 type SentryClient struct {
-	Projects SentryProjects
-	Teams    SentryTeams
+	Organizations SentryOrganizations
+	Projects      SentryProjects
+	Teams         SentryTeams
+}
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SentryOrganizations
+type SentryOrganizations interface {
+	ListProjects(organizationSlug string) ([]sentry.Project, *sentry.Response, error)
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SentryProjects
@@ -20,7 +26,6 @@ type SentryProjects interface {
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SentryTeams
 type SentryTeams interface {
-	ListProjects(organizationSlug, teamSlug string) ([]sentry.Project, *sentry.Response, error)
 	CreateProject(organizationSlug, teamSlug string, params *sentry.CreateProjectParams) (*sentry.Project, *sentry.Response, error)
 }
 

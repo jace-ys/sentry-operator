@@ -44,8 +44,8 @@ const (
 
 // ProjectKeyStatus defines the observed state of ProjectKey
 type ProjectKeyStatus struct {
-	Condition ProjectCondition `json:"condition,omitempty"`
-	Message   string           `json:"message,omitempty"`
+	Condition ProjectKeyCondition `json:"condition,omitempty"`
+	Message   string              `json:"message,omitempty"`
 
 	ID         string       `json:"id,omitempty"`
 	LastSynced *metav1.Time `json:"lastSynced,omitempty"`

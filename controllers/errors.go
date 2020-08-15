@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"net/http"
 )
 
 var (
@@ -15,12 +14,4 @@ type retryableError struct {
 
 func (e retryableError) Error() string {
 	return e.err.Error()
-}
-
-func retryableHTTPError(resp *http.Response, err error) error {
-	if resp.StatusCode >= 500 {
-		return retryableError{err}
-	}
-
-	return err
 }

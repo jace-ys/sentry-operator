@@ -26,22 +26,6 @@ type FakeSentryTeams struct {
 		result2 *sentry.Response
 		result3 error
 	}
-	ListProjectsStub        func(string, string) ([]sentry.Project, *sentry.Response, error)
-	listProjectsMutex       sync.RWMutex
-	listProjectsArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	listProjectsReturns struct {
-		result1 []sentry.Project
-		result2 *sentry.Response
-		result3 error
-	}
-	listProjectsReturnsOnCall map[int]struct {
-		result1 []sentry.Project
-		result2 *sentry.Response
-		result3 error
-	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -114,80 +98,11 @@ func (fake *FakeSentryTeams) CreateProjectReturnsOnCall(i int, result1 *sentry.P
 	}{result1, result2, result3}
 }
 
-func (fake *FakeSentryTeams) ListProjects(arg1 string, arg2 string) ([]sentry.Project, *sentry.Response, error) {
-	fake.listProjectsMutex.Lock()
-	ret, specificReturn := fake.listProjectsReturnsOnCall[len(fake.listProjectsArgsForCall)]
-	fake.listProjectsArgsForCall = append(fake.listProjectsArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("ListProjects", []interface{}{arg1, arg2})
-	fake.listProjectsMutex.Unlock()
-	if fake.ListProjectsStub != nil {
-		return fake.ListProjectsStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2, ret.result3
-	}
-	fakeReturns := fake.listProjectsReturns
-	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
-}
-
-func (fake *FakeSentryTeams) ListProjectsCallCount() int {
-	fake.listProjectsMutex.RLock()
-	defer fake.listProjectsMutex.RUnlock()
-	return len(fake.listProjectsArgsForCall)
-}
-
-func (fake *FakeSentryTeams) ListProjectsCalls(stub func(string, string) ([]sentry.Project, *sentry.Response, error)) {
-	fake.listProjectsMutex.Lock()
-	defer fake.listProjectsMutex.Unlock()
-	fake.ListProjectsStub = stub
-}
-
-func (fake *FakeSentryTeams) ListProjectsArgsForCall(i int) (string, string) {
-	fake.listProjectsMutex.RLock()
-	defer fake.listProjectsMutex.RUnlock()
-	argsForCall := fake.listProjectsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeSentryTeams) ListProjectsReturns(result1 []sentry.Project, result2 *sentry.Response, result3 error) {
-	fake.listProjectsMutex.Lock()
-	defer fake.listProjectsMutex.Unlock()
-	fake.ListProjectsStub = nil
-	fake.listProjectsReturns = struct {
-		result1 []sentry.Project
-		result2 *sentry.Response
-		result3 error
-	}{result1, result2, result3}
-}
-
-func (fake *FakeSentryTeams) ListProjectsReturnsOnCall(i int, result1 []sentry.Project, result2 *sentry.Response, result3 error) {
-	fake.listProjectsMutex.Lock()
-	defer fake.listProjectsMutex.Unlock()
-	fake.ListProjectsStub = nil
-	if fake.listProjectsReturnsOnCall == nil {
-		fake.listProjectsReturnsOnCall = make(map[int]struct {
-			result1 []sentry.Project
-			result2 *sentry.Response
-			result3 error
-		})
-	}
-	fake.listProjectsReturnsOnCall[i] = struct {
-		result1 []sentry.Project
-		result2 *sentry.Response
-		result3 error
-	}{result1, result2, result3}
-}
-
 func (fake *FakeSentryTeams) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.createProjectMutex.RLock()
 	defer fake.createProjectMutex.RUnlock()
-	fake.listProjectsMutex.RLock()
-	defer fake.listProjectsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

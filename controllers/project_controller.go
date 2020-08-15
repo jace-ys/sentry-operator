@@ -83,8 +83,9 @@ func (r *ProjectReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	hasFinalizer := containsFinalizer(project.GetFinalizers(), ProjectFinalizerName)
 
+	// Create our Sentry resource if we have not been synced before
 	if project.Status.LastSynced.IsZero() {
-		if _, err := r.handleCreate(ctx, &project, hasFinalizer); err != nil {
+		if err := r.handleCreate(ctx, &project, hasFinalizer); err != nil {
 			log.Error(err, "failed to create Project")
 			return ctrl.Result{}, r.handleError(ctx, &project, err)
 		}
@@ -93,22 +94,15 @@ func (r *ProjectReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
+	// Get the existing state of our Sentry resource as it might have drifted. Ignore ErrOutOfSync errors for now as we
+	// will handle this accordingly below.
 	existing, err := r.getExistingState(project)
-	if err != nil {
+	if err != nil && !errors.Is(err, ErrOutOfSync) {
 		log.Error(err, "failed to fetch Sentry project state")
-
-		if !errors.Is(err, ErrOutOfSync) {
-			return ctrl.Result{}, r.handleError(ctx, &project, err)
-		}
-
-		if existing, err = r.handleCreate(ctx, &project, hasFinalizer); err != nil {
-			log.Error(err, "failed to recreate Project")
-			return ctrl.Result{}, r.handleError(ctx, &project, err)
-		}
-
-		log.Info("successfully recreated Project")
+		return ctrl.Result{}, r.handleError(ctx, &project, err)
 	}
 
+	// Attempt to delete our Sentry resource and remove our finalizer if we receive a delete request
 	if !project.ObjectMeta.DeletionTimestamp.IsZero() {
 		if hasFinalizer {
 			if err := r.handleDelete(ctx, &project, existing); err != nil {
@@ -121,22 +115,42 @@ func (r *ProjectReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	if _, err := r.handleUpdate(ctx, &project, existing); err != nil {
+	// Our Sentry resource might have been deleted externally of the controller, so attempt to recreate it
+	if errors.Is(err, ErrOutOfSync) {
+		if err := r.handleCreate(ctx, &project, hasFinalizer); err != nil {
+			log.Error(err, "failed to recreate Project")
+			return ctrl.Result{}, r.handleError(ctx, &project, err)
+		}
+
+		log.Info("successfully recreated Project")
+		return ctrl.Result{}, nil
+	}
+
+	// Reconcile any differences between our spec and the existing state of our Sentry resource
+	if err := r.handleUpdate(ctx, &project, existing); err != nil {
 		log.Error(err, "failed to update Project")
 		return ctrl.Result{}, r.handleError(ctx, &project, err)
 	}
 
 	log.Info("successfully updated Project")
+
 	return ctrl.Result{}, nil
 }
 
-// getExistingState retrieves the true state of the project that exists in Sentry, using its constant project
-// ID. It returns an ErrOutOfSync error when it can't find a project with the expected ID, allowing us to
-// correct drift in cases where the project was deleted externally of the controller.
+// getExistingState retrieves the true state of the resource that exists in Sentry using its constant resource ID, and
+// returns an ErrOutOfSync error if the resource cannot be found.
 func (r *ProjectReconciler) getExistingState(project sentryv1alpha1.Project) (*sentry.Project, error) {
-	sProjects, resp, err := r.Sentry.Client.Teams.ListProjects(r.Sentry.Organization, project.Spec.Team)
+	// List our organization's projects instead of team's as when a Sentry team gets deleted, the projects under it get
+	// orphaned under the organization.
+	sProjects, resp, err := r.Sentry.Client.Organizations.ListProjects(r.Sentry.Organization)
 	if err != nil {
-		return nil, retryableHTTPError(resp.Response, err)
+		switch {
+		case resp.StatusCode >= 500:
+			return nil, retryableError{err}
+		default:
+			// Don't retry on 4XX errors as these indicate that there might be an issue with our organization
+			return nil, err
+		}
 	}
 
 	for idx, sProject := range sProjects {
@@ -145,40 +159,59 @@ func (r *ProjectReconciler) getExistingState(project sentryv1alpha1.Project) (*s
 		}
 	}
 
-	return nil, fmt.Errorf("%w: could not find Sentry project with ID %s", ErrOutOfSync, project.Status.ID)
+	return nil, ErrOutOfSync
 }
 
-func (r *ProjectReconciler) handleCreate(ctx context.Context, project *sentryv1alpha1.Project, hasFinalizer bool) (*sentry.Project, error) {
+func (r *ProjectReconciler) handleCreate(ctx context.Context, project *sentryv1alpha1.Project, hasFinalizer bool) error {
 	sProject, resp, err := r.Sentry.Client.Teams.CreateProject(r.Sentry.Organization, project.Spec.Team, &sentry.CreateProjectParams{
 		Name: project.Spec.Name,
 		Slug: project.Spec.Slug,
 	})
 	if err != nil {
-		return nil, retryableHTTPError(resp.Response, err)
+		switch {
+		case resp.StatusCode >= 500:
+			return retryableError{err}
+		case resp.StatusCode == http.StatusNotFound:
+			// Retry on 404 errors as the error might get resolved once dependencies are satisfied
+			return retryableError{err}
+		default:
+			// Don't retry on other 4XX errors as these indicate that we might have an issue with our spec
+			return err
+		}
 	}
 
 	project.Status.Condition = sentryv1alpha1.ProjectConditionCreated
+	project.Status.Message = ""
 	project.Status.ID = sProject.ID
 	project.Status.LastSynced = &metav1.Time{Time: time.Now()}
 	if err := r.Status().Update(ctx, project); err != nil {
-		return nil, retryableError{err}
+		return retryableError{err}
 	}
 
 	if !hasFinalizer {
 		project.SetFinalizers(append(project.GetFinalizers(), ProjectFinalizerName))
 		if err := r.Update(ctx, project); err != nil {
-			return nil, retryableError{err}
+			return retryableError{err}
 		}
 	}
 
-	return sProject, nil
+	return nil
 }
 
 func (r *ProjectReconciler) handleDelete(ctx context.Context, project *sentryv1alpha1.Project, existing *sentry.Project) error {
-	resp, err := r.Sentry.Client.Projects.Delete(r.Sentry.Organization, existing.Slug)
-	if err != nil {
-		if resp.StatusCode != http.StatusNotFound {
-			return retryableHTTPError(resp.Response, err)
+	// Our resource might no longer exist so check that it's not nil to avoid panicking below
+	if existing != nil {
+		resp, err := r.Sentry.Client.Projects.Delete(r.Sentry.Organization, existing.Slug)
+		if err != nil {
+			switch {
+			case resp.StatusCode >= 500:
+				return retryableError{err}
+			case resp.StatusCode == http.StatusNotFound:
+				// Ignore 404 errors as our resource might have already been deleted
+			default:
+				// Don't retry on other 4XX errors as these indicate that we might have an issue with our spec
+				return err
+			}
 		}
 	}
 
@@ -190,13 +223,31 @@ func (r *ProjectReconciler) handleDelete(ctx context.Context, project *sentryv1a
 	return nil
 }
 
-func (r *ProjectReconciler) handleUpdate(ctx context.Context, project *sentryv1alpha1.Project, existing *sentry.Project) (*sentry.Project, error) {
+func (r *ProjectReconciler) handleUpdate(ctx context.Context, project *sentryv1alpha1.Project, existing *sentry.Project) error {
+	// Error if our spec's team doesn't match reality as the Sentry API doesn't allow us to update a project's team.
+	// This helps highlight configuration drift where a user forgets to update our spec's team after modifying the
+	// associated team's slug.
+	// Workaround to move project under a new team: manually modify the project's team via the Sentry UI, and update our
+	// spec accordingly to reflect the change.
+	if project.Spec.Team != existing.Team.Slug {
+		return retryableError{fmt.Errorf("%w: Project's team could not be updated", ErrOutOfSync)}
+	}
+
 	sProject, resp, err := r.Sentry.Client.Projects.Update(r.Sentry.Organization, existing.Slug, &sentry.UpdateProjectParams{
 		Name: project.Spec.Name,
 		Slug: project.Spec.Slug,
 	})
 	if err != nil {
-		return nil, retryableHTTPError(resp.Response, err)
+		switch {
+		case resp.StatusCode >= 500:
+			return retryableError{err}
+		case resp.StatusCode == http.StatusNotFound:
+			// Retry on 404 errors as the error might get resolved once dependencies are satisfied
+			return retryableError{err}
+		default:
+			// Don't retry on 4XX errors as these indicate that we might have an issue with our spec
+			return err
+		}
 	}
 
 	project.Status.Condition = sentryv1alpha1.ProjectConditionCreated
@@ -204,14 +255,14 @@ func (r *ProjectReconciler) handleUpdate(ctx context.Context, project *sentryv1a
 	project.Status.ID = sProject.ID
 	project.Status.LastSynced = &metav1.Time{Time: time.Now()}
 	if err := r.Status().Update(ctx, project); err != nil {
-		return nil, retryableError{err}
+		return retryableError{err}
 	}
 
-	return sProject, nil
+	return nil
 }
 
-// handleError is a helper function for annotating our Project status with ProjectConditionError and the error message.
-// It also checks if the error is retryable, ignoring non-retryable ones so we don't requeue our reconcile key.
+// handleError is a helper function for annotating our Custom Resource status with the error condition and message. It
+// also checks if the error is retryable, ignoring non-retryable ones so we don't requeue our reconcile key.
 func (r *ProjectReconciler) handleError(ctx context.Context, project *sentryv1alpha1.Project, err error) error {
 	project.Status.Condition = sentryv1alpha1.ProjectConditionError
 	project.Status.Message = err.Error()
