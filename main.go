@@ -80,7 +80,7 @@ func main() {
 	}
 
 	sentryClient := sentry.NewClient(*sentryToken, sentry.WithSentryURL(*sentryURL))
-	sentry := &controllers.Sentry{
+	ctrlSentry := &controllers.Sentry{
 		Organization: *sentryOrganization,
 		Client: &controllers.SentryClient{
 			Organizations: sentryClient.Organizations,
@@ -93,7 +93,7 @@ func main() {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Project"),
 		Scheme: mgr.GetScheme(),
-		Sentry: sentry,
+		Sentry: ctrlSentry,
 	}).SetupWithManager(mgr); err != nil {
 		exit(err, "unable to create controller", "controller", "Project")
 	}
@@ -102,7 +102,7 @@ func main() {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ProjectKey"),
 		Scheme: mgr.GetScheme(),
-		Sentry: sentry,
+		Sentry: ctrlSentry,
 	}).SetupWithManager(mgr); err != nil {
 		exit(err, "unable to create controller", "controller", "ProjectKey")
 	}
@@ -111,7 +111,7 @@ func main() {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Team"),
 		Scheme: mgr.GetScheme(),
-		Sentry: sentry,
+		Sentry: ctrlSentry,
 	}).SetupWithManager(mgr); err != nil {
 		exit(err, "unable to create controller", "controller", "Team")
 	}

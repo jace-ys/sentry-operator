@@ -57,12 +57,6 @@ var _ = BeforeSuite(func() {
 	err = sentryv1alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = sentryv1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = sentryv1alpha1.AddToScheme(scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
-
 	// +kubebuilder:scaffold:scheme
 
 	k8sManager, err := ctrl.NewManager(cfg, ctrl.Options{
@@ -74,17 +68,33 @@ var _ = BeforeSuite(func() {
 	fakeSentryProjects = new(controllersfakes.FakeSentryProjects)
 	fakeSentryTeams = new(controllersfakes.FakeSentryTeams)
 
+	ctrlSentry := &controllers.Sentry{
+		Organization: "organization",
+		Client: &controllers.SentryClient{
+			Organizations: fakeSentryOrganizations,
+			Projects:      fakeSentryProjects,
+			Teams:         fakeSentryTeams,
+		},
+	}
+
 	err = (&controllers.ProjectReconciler{
 		Client: k8sManager.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Project"),
-		Sentry: &controllers.Sentry{
-			Organization: "organization",
-			Client: &controllers.SentryClient{
-				Organizations: fakeSentryOrganizations,
-				Projects:      fakeSentryProjects,
-				Teams:         fakeSentryTeams,
-			},
-		},
+		Sentry: ctrlSentry,
+	}).SetupWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&controllers.ProjectKeyReconciler{
+		Client: k8sManager.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ProjectKey"),
+		Sentry: ctrlSentry,
+	}).SetupWithManager(k8sManager)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = (&controllers.TeamReconciler{
+		Client: k8sManager.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Team"),
+		Sentry: ctrlSentry,
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
 
@@ -113,6 +123,15 @@ func testSentryProject(id, team, name string) *sentry.Project {
 		Team: sentry.Team{
 			Slug: team,
 		},
+	}
+}
+
+func testSentryTeam(id, name string) *sentry.Team {
+	return &sentry.Team{
+		DateCreated: time.Now(),
+		ID:          id,
+		Name:        name,
+		Slug:        name,
 	}
 }
 

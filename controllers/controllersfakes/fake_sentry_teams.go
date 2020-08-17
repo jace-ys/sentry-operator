@@ -9,6 +9,22 @@ import (
 )
 
 type FakeSentryTeams struct {
+	CreateStub        func(string, *sentry.CreateTeamParams) (*sentry.Team, *sentry.Response, error)
+	createMutex       sync.RWMutex
+	createArgsForCall []struct {
+		arg1 string
+		arg2 *sentry.CreateTeamParams
+	}
+	createReturns struct {
+		result1 *sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}
+	createReturnsOnCall map[int]struct {
+		result1 *sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}
 	CreateProjectStub        func(string, string, *sentry.CreateProjectParams) (*sentry.Project, *sentry.Response, error)
 	createProjectMutex       sync.RWMutex
 	createProjectArgsForCall []struct {
@@ -26,8 +42,121 @@ type FakeSentryTeams struct {
 		result2 *sentry.Response
 		result3 error
 	}
+	DeleteStub        func(string, string) (*sentry.Response, error)
+	deleteMutex       sync.RWMutex
+	deleteArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	deleteReturns struct {
+		result1 *sentry.Response
+		result2 error
+	}
+	deleteReturnsOnCall map[int]struct {
+		result1 *sentry.Response
+		result2 error
+	}
+	ListStub        func(string) ([]sentry.Team, *sentry.Response, error)
+	listMutex       sync.RWMutex
+	listArgsForCall []struct {
+		arg1 string
+	}
+	listReturns struct {
+		result1 []sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}
+	listReturnsOnCall map[int]struct {
+		result1 []sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}
+	UpdateStub        func(string, string, *sentry.UpdateTeamParams) (*sentry.Team, *sentry.Response, error)
+	updateMutex       sync.RWMutex
+	updateArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 *sentry.UpdateTeamParams
+	}
+	updateReturns struct {
+		result1 *sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}
+	updateReturnsOnCall map[int]struct {
+		result1 *sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeSentryTeams) Create(arg1 string, arg2 *sentry.CreateTeamParams) (*sentry.Team, *sentry.Response, error) {
+	fake.createMutex.Lock()
+	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
+	fake.createArgsForCall = append(fake.createArgsForCall, struct {
+		arg1 string
+		arg2 *sentry.CreateTeamParams
+	}{arg1, arg2})
+	fake.recordInvocation("Create", []interface{}{arg1, arg2})
+	fake.createMutex.Unlock()
+	if fake.CreateStub != nil {
+		return fake.CreateStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.createReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeSentryTeams) CreateCallCount() int {
+	fake.createMutex.RLock()
+	defer fake.createMutex.RUnlock()
+	return len(fake.createArgsForCall)
+}
+
+func (fake *FakeSentryTeams) CreateCalls(stub func(string, *sentry.CreateTeamParams) (*sentry.Team, *sentry.Response, error)) {
+	fake.createMutex.Lock()
+	defer fake.createMutex.Unlock()
+	fake.CreateStub = stub
+}
+
+func (fake *FakeSentryTeams) CreateArgsForCall(i int) (string, *sentry.CreateTeamParams) {
+	fake.createMutex.RLock()
+	defer fake.createMutex.RUnlock()
+	argsForCall := fake.createArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSentryTeams) CreateReturns(result1 *sentry.Team, result2 *sentry.Response, result3 error) {
+	fake.createMutex.Lock()
+	defer fake.createMutex.Unlock()
+	fake.CreateStub = nil
+	fake.createReturns = struct {
+		result1 *sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeSentryTeams) CreateReturnsOnCall(i int, result1 *sentry.Team, result2 *sentry.Response, result3 error) {
+	fake.createMutex.Lock()
+	defer fake.createMutex.Unlock()
+	fake.CreateStub = nil
+	if fake.createReturnsOnCall == nil {
+		fake.createReturnsOnCall = make(map[int]struct {
+			result1 *sentry.Team
+			result2 *sentry.Response
+			result3 error
+		})
+	}
+	fake.createReturnsOnCall[i] = struct {
+		result1 *sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeSentryTeams) CreateProject(arg1 string, arg2 string, arg3 *sentry.CreateProjectParams) (*sentry.Project, *sentry.Response, error) {
@@ -98,11 +227,217 @@ func (fake *FakeSentryTeams) CreateProjectReturnsOnCall(i int, result1 *sentry.P
 	}{result1, result2, result3}
 }
 
+func (fake *FakeSentryTeams) Delete(arg1 string, arg2 string) (*sentry.Response, error) {
+	fake.deleteMutex.Lock()
+	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
+	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("Delete", []interface{}{arg1, arg2})
+	fake.deleteMutex.Unlock()
+	if fake.DeleteStub != nil {
+		return fake.DeleteStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.deleteReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSentryTeams) DeleteCallCount() int {
+	fake.deleteMutex.RLock()
+	defer fake.deleteMutex.RUnlock()
+	return len(fake.deleteArgsForCall)
+}
+
+func (fake *FakeSentryTeams) DeleteCalls(stub func(string, string) (*sentry.Response, error)) {
+	fake.deleteMutex.Lock()
+	defer fake.deleteMutex.Unlock()
+	fake.DeleteStub = stub
+}
+
+func (fake *FakeSentryTeams) DeleteArgsForCall(i int) (string, string) {
+	fake.deleteMutex.RLock()
+	defer fake.deleteMutex.RUnlock()
+	argsForCall := fake.deleteArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSentryTeams) DeleteReturns(result1 *sentry.Response, result2 error) {
+	fake.deleteMutex.Lock()
+	defer fake.deleteMutex.Unlock()
+	fake.DeleteStub = nil
+	fake.deleteReturns = struct {
+		result1 *sentry.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSentryTeams) DeleteReturnsOnCall(i int, result1 *sentry.Response, result2 error) {
+	fake.deleteMutex.Lock()
+	defer fake.deleteMutex.Unlock()
+	fake.DeleteStub = nil
+	if fake.deleteReturnsOnCall == nil {
+		fake.deleteReturnsOnCall = make(map[int]struct {
+			result1 *sentry.Response
+			result2 error
+		})
+	}
+	fake.deleteReturnsOnCall[i] = struct {
+		result1 *sentry.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSentryTeams) List(arg1 string) ([]sentry.Team, *sentry.Response, error) {
+	fake.listMutex.Lock()
+	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
+	fake.listArgsForCall = append(fake.listArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("List", []interface{}{arg1})
+	fake.listMutex.Unlock()
+	if fake.ListStub != nil {
+		return fake.ListStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.listReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeSentryTeams) ListCallCount() int {
+	fake.listMutex.RLock()
+	defer fake.listMutex.RUnlock()
+	return len(fake.listArgsForCall)
+}
+
+func (fake *FakeSentryTeams) ListCalls(stub func(string) ([]sentry.Team, *sentry.Response, error)) {
+	fake.listMutex.Lock()
+	defer fake.listMutex.Unlock()
+	fake.ListStub = stub
+}
+
+func (fake *FakeSentryTeams) ListArgsForCall(i int) string {
+	fake.listMutex.RLock()
+	defer fake.listMutex.RUnlock()
+	argsForCall := fake.listArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSentryTeams) ListReturns(result1 []sentry.Team, result2 *sentry.Response, result3 error) {
+	fake.listMutex.Lock()
+	defer fake.listMutex.Unlock()
+	fake.ListStub = nil
+	fake.listReturns = struct {
+		result1 []sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeSentryTeams) ListReturnsOnCall(i int, result1 []sentry.Team, result2 *sentry.Response, result3 error) {
+	fake.listMutex.Lock()
+	defer fake.listMutex.Unlock()
+	fake.ListStub = nil
+	if fake.listReturnsOnCall == nil {
+		fake.listReturnsOnCall = make(map[int]struct {
+			result1 []sentry.Team
+			result2 *sentry.Response
+			result3 error
+		})
+	}
+	fake.listReturnsOnCall[i] = struct {
+		result1 []sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeSentryTeams) Update(arg1 string, arg2 string, arg3 *sentry.UpdateTeamParams) (*sentry.Team, *sentry.Response, error) {
+	fake.updateMutex.Lock()
+	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
+	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 *sentry.UpdateTeamParams
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3})
+	fake.updateMutex.Unlock()
+	if fake.UpdateStub != nil {
+		return fake.UpdateStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.updateReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeSentryTeams) UpdateCallCount() int {
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
+	return len(fake.updateArgsForCall)
+}
+
+func (fake *FakeSentryTeams) UpdateCalls(stub func(string, string, *sentry.UpdateTeamParams) (*sentry.Team, *sentry.Response, error)) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = stub
+}
+
+func (fake *FakeSentryTeams) UpdateArgsForCall(i int) (string, string, *sentry.UpdateTeamParams) {
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
+	argsForCall := fake.updateArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSentryTeams) UpdateReturns(result1 *sentry.Team, result2 *sentry.Response, result3 error) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = nil
+	fake.updateReturns = struct {
+		result1 *sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeSentryTeams) UpdateReturnsOnCall(i int, result1 *sentry.Team, result2 *sentry.Response, result3 error) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = nil
+	if fake.updateReturnsOnCall == nil {
+		fake.updateReturnsOnCall = make(map[int]struct {
+			result1 *sentry.Team
+			result2 *sentry.Response
+			result3 error
+		})
+	}
+	fake.updateReturnsOnCall[i] = struct {
+		result1 *sentry.Team
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *FakeSentryTeams) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.createMutex.RLock()
+	defer fake.createMutex.RUnlock()
 	fake.createProjectMutex.RLock()
 	defer fake.createProjectMutex.RUnlock()
+	fake.deleteMutex.RLock()
+	defer fake.deleteMutex.RUnlock()
+	fake.listMutex.RLock()
+	defer fake.listMutex.RUnlock()
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

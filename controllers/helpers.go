@@ -26,6 +26,10 @@ type SentryProjects interface {
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SentryTeams
 type SentryTeams interface {
+	List(organizationSlug string) ([]sentry.Team, *sentry.Response, error)
+	Create(organizationSlug string, params *sentry.CreateTeamParams) (*sentry.Team, *sentry.Response, error)
+	Update(organizationSlug, teamSlug string, params *sentry.UpdateTeamParams) (*sentry.Team, *sentry.Response, error)
+	Delete(organizationSlug, teamSlug string) (*sentry.Response, error)
 	CreateProject(organizationSlug, teamSlug string, params *sentry.CreateProjectParams) (*sentry.Project, *sentry.Response, error)
 }
 
