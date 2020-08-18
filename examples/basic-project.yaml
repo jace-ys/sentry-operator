@@ -4,6 +4,6 @@ kind: Project
 metadata:
   name: basic-project
 spec:
-  team: test
-  name: test
-  slug: test
+  team: my-team
+  name: my-project
+  slug: my-project

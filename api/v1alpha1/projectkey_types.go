@@ -32,7 +32,8 @@ import (
 
 // ProjectKeySpec defines the desired state of ProjectKey
 type ProjectKeySpec struct {
-	Name string `json:"name,omitempty"`
+	Project string `json:"project,omitempty"`
+	Name    string `json:"name,omitempty"`
 }
 
 type ProjectKeyCondition string
@@ -49,6 +50,7 @@ type ProjectKeyStatus struct {
 
 	ID         string       `json:"id,omitempty"`
 	LastSynced *metav1.Time `json:"lastSynced,omitempty"`
+	ProjectID  string       `json:"projectID,omitempty"`
 }
 
 // +kubebuilder:object:root=true

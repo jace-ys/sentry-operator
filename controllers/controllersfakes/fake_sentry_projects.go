@@ -9,6 +9,23 @@ import (
 )
 
 type FakeSentryProjects struct {
+	CreateKeyStub        func(string, string, *sentry.CreateProjectKeyParams) (*sentry.ProjectKey, *sentry.Response, error)
+	createKeyMutex       sync.RWMutex
+	createKeyArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 *sentry.CreateProjectKeyParams
+	}
+	createKeyReturns struct {
+		result1 *sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}
+	createKeyReturnsOnCall map[int]struct {
+		result1 *sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}
 	DeleteStub        func(string, string) (*sentry.Response, error)
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
@@ -22,6 +39,37 @@ type FakeSentryProjects struct {
 	deleteReturnsOnCall map[int]struct {
 		result1 *sentry.Response
 		result2 error
+	}
+	DeleteKeyStub        func(string, string, string) (*sentry.Response, error)
+	deleteKeyMutex       sync.RWMutex
+	deleteKeyArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}
+	deleteKeyReturns struct {
+		result1 *sentry.Response
+		result2 error
+	}
+	deleteKeyReturnsOnCall map[int]struct {
+		result1 *sentry.Response
+		result2 error
+	}
+	ListKeysStub        func(string, string) ([]sentry.ProjectKey, *sentry.Response, error)
+	listKeysMutex       sync.RWMutex
+	listKeysArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	listKeysReturns struct {
+		result1 []sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}
+	listKeysReturnsOnCall map[int]struct {
+		result1 []sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
 	}
 	UpdateStub        func(string, string, *sentry.UpdateProjectParams) (*sentry.Project, *sentry.Response, error)
 	updateMutex       sync.RWMutex
@@ -40,8 +88,94 @@ type FakeSentryProjects struct {
 		result2 *sentry.Response
 		result3 error
 	}
+	UpdateKeyStub        func(string, string, string, *sentry.UpdateProjectKeyParams) (*sentry.ProjectKey, *sentry.Response, error)
+	updateKeyMutex       sync.RWMutex
+	updateKeyArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 *sentry.UpdateProjectKeyParams
+	}
+	updateKeyReturns struct {
+		result1 *sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}
+	updateKeyReturnsOnCall map[int]struct {
+		result1 *sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeSentryProjects) CreateKey(arg1 string, arg2 string, arg3 *sentry.CreateProjectKeyParams) (*sentry.ProjectKey, *sentry.Response, error) {
+	fake.createKeyMutex.Lock()
+	ret, specificReturn := fake.createKeyReturnsOnCall[len(fake.createKeyArgsForCall)]
+	fake.createKeyArgsForCall = append(fake.createKeyArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 *sentry.CreateProjectKeyParams
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("CreateKey", []interface{}{arg1, arg2, arg3})
+	fake.createKeyMutex.Unlock()
+	if fake.CreateKeyStub != nil {
+		return fake.CreateKeyStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.createKeyReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeSentryProjects) CreateKeyCallCount() int {
+	fake.createKeyMutex.RLock()
+	defer fake.createKeyMutex.RUnlock()
+	return len(fake.createKeyArgsForCall)
+}
+
+func (fake *FakeSentryProjects) CreateKeyCalls(stub func(string, string, *sentry.CreateProjectKeyParams) (*sentry.ProjectKey, *sentry.Response, error)) {
+	fake.createKeyMutex.Lock()
+	defer fake.createKeyMutex.Unlock()
+	fake.CreateKeyStub = stub
+}
+
+func (fake *FakeSentryProjects) CreateKeyArgsForCall(i int) (string, string, *sentry.CreateProjectKeyParams) {
+	fake.createKeyMutex.RLock()
+	defer fake.createKeyMutex.RUnlock()
+	argsForCall := fake.createKeyArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSentryProjects) CreateKeyReturns(result1 *sentry.ProjectKey, result2 *sentry.Response, result3 error) {
+	fake.createKeyMutex.Lock()
+	defer fake.createKeyMutex.Unlock()
+	fake.CreateKeyStub = nil
+	fake.createKeyReturns = struct {
+		result1 *sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeSentryProjects) CreateKeyReturnsOnCall(i int, result1 *sentry.ProjectKey, result2 *sentry.Response, result3 error) {
+	fake.createKeyMutex.Lock()
+	defer fake.createKeyMutex.Unlock()
+	fake.CreateKeyStub = nil
+	if fake.createKeyReturnsOnCall == nil {
+		fake.createKeyReturnsOnCall = make(map[int]struct {
+			result1 *sentry.ProjectKey
+			result2 *sentry.Response
+			result3 error
+		})
+	}
+	fake.createKeyReturnsOnCall[i] = struct {
+		result1 *sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeSentryProjects) Delete(arg1 string, arg2 string) (*sentry.Response, error) {
@@ -106,6 +240,138 @@ func (fake *FakeSentryProjects) DeleteReturnsOnCall(i int, result1 *sentry.Respo
 		result1 *sentry.Response
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *FakeSentryProjects) DeleteKey(arg1 string, arg2 string, arg3 string) (*sentry.Response, error) {
+	fake.deleteKeyMutex.Lock()
+	ret, specificReturn := fake.deleteKeyReturnsOnCall[len(fake.deleteKeyArgsForCall)]
+	fake.deleteKeyArgsForCall = append(fake.deleteKeyArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("DeleteKey", []interface{}{arg1, arg2, arg3})
+	fake.deleteKeyMutex.Unlock()
+	if fake.DeleteKeyStub != nil {
+		return fake.DeleteKeyStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.deleteKeyReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSentryProjects) DeleteKeyCallCount() int {
+	fake.deleteKeyMutex.RLock()
+	defer fake.deleteKeyMutex.RUnlock()
+	return len(fake.deleteKeyArgsForCall)
+}
+
+func (fake *FakeSentryProjects) DeleteKeyCalls(stub func(string, string, string) (*sentry.Response, error)) {
+	fake.deleteKeyMutex.Lock()
+	defer fake.deleteKeyMutex.Unlock()
+	fake.DeleteKeyStub = stub
+}
+
+func (fake *FakeSentryProjects) DeleteKeyArgsForCall(i int) (string, string, string) {
+	fake.deleteKeyMutex.RLock()
+	defer fake.deleteKeyMutex.RUnlock()
+	argsForCall := fake.deleteKeyArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSentryProjects) DeleteKeyReturns(result1 *sentry.Response, result2 error) {
+	fake.deleteKeyMutex.Lock()
+	defer fake.deleteKeyMutex.Unlock()
+	fake.DeleteKeyStub = nil
+	fake.deleteKeyReturns = struct {
+		result1 *sentry.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSentryProjects) DeleteKeyReturnsOnCall(i int, result1 *sentry.Response, result2 error) {
+	fake.deleteKeyMutex.Lock()
+	defer fake.deleteKeyMutex.Unlock()
+	fake.DeleteKeyStub = nil
+	if fake.deleteKeyReturnsOnCall == nil {
+		fake.deleteKeyReturnsOnCall = make(map[int]struct {
+			result1 *sentry.Response
+			result2 error
+		})
+	}
+	fake.deleteKeyReturnsOnCall[i] = struct {
+		result1 *sentry.Response
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSentryProjects) ListKeys(arg1 string, arg2 string) ([]sentry.ProjectKey, *sentry.Response, error) {
+	fake.listKeysMutex.Lock()
+	ret, specificReturn := fake.listKeysReturnsOnCall[len(fake.listKeysArgsForCall)]
+	fake.listKeysArgsForCall = append(fake.listKeysArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("ListKeys", []interface{}{arg1, arg2})
+	fake.listKeysMutex.Unlock()
+	if fake.ListKeysStub != nil {
+		return fake.ListKeysStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.listKeysReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeSentryProjects) ListKeysCallCount() int {
+	fake.listKeysMutex.RLock()
+	defer fake.listKeysMutex.RUnlock()
+	return len(fake.listKeysArgsForCall)
+}
+
+func (fake *FakeSentryProjects) ListKeysCalls(stub func(string, string) ([]sentry.ProjectKey, *sentry.Response, error)) {
+	fake.listKeysMutex.Lock()
+	defer fake.listKeysMutex.Unlock()
+	fake.ListKeysStub = stub
+}
+
+func (fake *FakeSentryProjects) ListKeysArgsForCall(i int) (string, string) {
+	fake.listKeysMutex.RLock()
+	defer fake.listKeysMutex.RUnlock()
+	argsForCall := fake.listKeysArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSentryProjects) ListKeysReturns(result1 []sentry.ProjectKey, result2 *sentry.Response, result3 error) {
+	fake.listKeysMutex.Lock()
+	defer fake.listKeysMutex.Unlock()
+	fake.ListKeysStub = nil
+	fake.listKeysReturns = struct {
+		result1 []sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeSentryProjects) ListKeysReturnsOnCall(i int, result1 []sentry.ProjectKey, result2 *sentry.Response, result3 error) {
+	fake.listKeysMutex.Lock()
+	defer fake.listKeysMutex.Unlock()
+	fake.ListKeysStub = nil
+	if fake.listKeysReturnsOnCall == nil {
+		fake.listKeysReturnsOnCall = make(map[int]struct {
+			result1 []sentry.ProjectKey
+			result2 *sentry.Response
+			result3 error
+		})
+	}
+	fake.listKeysReturnsOnCall[i] = struct {
+		result1 []sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeSentryProjects) Update(arg1 string, arg2 string, arg3 *sentry.UpdateProjectParams) (*sentry.Project, *sentry.Response, error) {
@@ -176,13 +442,90 @@ func (fake *FakeSentryProjects) UpdateReturnsOnCall(i int, result1 *sentry.Proje
 	}{result1, result2, result3}
 }
 
+func (fake *FakeSentryProjects) UpdateKey(arg1 string, arg2 string, arg3 string, arg4 *sentry.UpdateProjectKeyParams) (*sentry.ProjectKey, *sentry.Response, error) {
+	fake.updateKeyMutex.Lock()
+	ret, specificReturn := fake.updateKeyReturnsOnCall[len(fake.updateKeyArgsForCall)]
+	fake.updateKeyArgsForCall = append(fake.updateKeyArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 *sentry.UpdateProjectKeyParams
+	}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("UpdateKey", []interface{}{arg1, arg2, arg3, arg4})
+	fake.updateKeyMutex.Unlock()
+	if fake.UpdateKeyStub != nil {
+		return fake.UpdateKeyStub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.updateKeyReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeSentryProjects) UpdateKeyCallCount() int {
+	fake.updateKeyMutex.RLock()
+	defer fake.updateKeyMutex.RUnlock()
+	return len(fake.updateKeyArgsForCall)
+}
+
+func (fake *FakeSentryProjects) UpdateKeyCalls(stub func(string, string, string, *sentry.UpdateProjectKeyParams) (*sentry.ProjectKey, *sentry.Response, error)) {
+	fake.updateKeyMutex.Lock()
+	defer fake.updateKeyMutex.Unlock()
+	fake.UpdateKeyStub = stub
+}
+
+func (fake *FakeSentryProjects) UpdateKeyArgsForCall(i int) (string, string, string, *sentry.UpdateProjectKeyParams) {
+	fake.updateKeyMutex.RLock()
+	defer fake.updateKeyMutex.RUnlock()
+	argsForCall := fake.updateKeyArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeSentryProjects) UpdateKeyReturns(result1 *sentry.ProjectKey, result2 *sentry.Response, result3 error) {
+	fake.updateKeyMutex.Lock()
+	defer fake.updateKeyMutex.Unlock()
+	fake.UpdateKeyStub = nil
+	fake.updateKeyReturns = struct {
+		result1 *sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeSentryProjects) UpdateKeyReturnsOnCall(i int, result1 *sentry.ProjectKey, result2 *sentry.Response, result3 error) {
+	fake.updateKeyMutex.Lock()
+	defer fake.updateKeyMutex.Unlock()
+	fake.UpdateKeyStub = nil
+	if fake.updateKeyReturnsOnCall == nil {
+		fake.updateKeyReturnsOnCall = make(map[int]struct {
+			result1 *sentry.ProjectKey
+			result2 *sentry.Response
+			result3 error
+		})
+	}
+	fake.updateKeyReturnsOnCall[i] = struct {
+		result1 *sentry.ProjectKey
+		result2 *sentry.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *FakeSentryProjects) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.createKeyMutex.RLock()
+	defer fake.createKeyMutex.RUnlock()
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
+	fake.deleteKeyMutex.RLock()
+	defer fake.deleteKeyMutex.RUnlock()
+	fake.listKeysMutex.RLock()
+	defer fake.listKeysMutex.RUnlock()
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
+	fake.updateKeyMutex.RLock()
+	defer fake.updateKeyMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

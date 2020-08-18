@@ -46,6 +46,8 @@ spec:
           properties:
             name:
               type: string
+            project:
+              type: string
           type: object
         status:
           description: ProjectKeyStatus defines the observed state of ProjectKey
@@ -58,6 +60,8 @@ spec:
               format: date-time
               type: string
             message:
+              type: string
+            projectID:
               type: string
           type: object
       type: object

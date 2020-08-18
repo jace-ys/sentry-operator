@@ -22,6 +22,10 @@ type SentryOrganizations interface {
 type SentryProjects interface {
 	Update(organizationSlug, projectSlug string, params *sentry.UpdateProjectParams) (*sentry.Project, *sentry.Response, error)
 	Delete(organizationSlug, projectSlug string) (*sentry.Response, error)
+	ListKeys(organizationSlug, projectSlug string) ([]sentry.ProjectKey, *sentry.Response, error)
+	CreateKey(organizationSlug, projectSlug string, params *sentry.CreateProjectKeyParams) (*sentry.ProjectKey, *sentry.Response, error)
+	UpdateKey(organizationSlug, projectSlug, keyID string, params *sentry.UpdateProjectKeyParams) (*sentry.ProjectKey, *sentry.Response, error)
+	DeleteKey(organizationSlug, projectSlug, keyID string) (*sentry.Response, error)
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SentryTeams

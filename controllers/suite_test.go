@@ -126,6 +126,15 @@ func testSentryProject(id, team, name string) *sentry.Project {
 	}
 }
 
+func testSentryProjectKey(id string, projectID int, name string) *sentry.ProjectKey {
+	return &sentry.ProjectKey{
+		DateCreated: time.Now(),
+		ID:          id,
+		Name:        name,
+		ProjectID:   projectID,
+	}
+}
+
 func testSentryTeam(id, name string) *sentry.Team {
 	return &sentry.Team{
 		DateCreated: time.Now(),

@@ -4,4 +4,5 @@ kind: ProjectKey
 metadata:
   name: basic-projectkey
 spec:
-  name: test
+  project: my-project
+  name: my-projectkey
