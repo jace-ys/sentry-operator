@@ -24,6 +24,18 @@ type OrganizationStatus struct {
 	Name string `json:"name"`
 }
 
+func (s *OrganizationsService) Get(organizationSlug string) (*Organization, *Response, error) {
+	endpoint := fmt.Sprintf("/organizations/%s", organizationSlug)
+	req, err := s.client.newRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	organization := new(Organization)
+	resp, err := s.client.do(req, organization)
+	return organization, resp, err
+}
+
 func (s *OrganizationsService) ListProjects(organizationSlug string) ([]Project, *Response, error) {
 	endpoint := fmt.Sprintf("/organizations/%s/projects", organizationSlug)
 	req, err := s.client.newRequest(http.MethodGet, endpoint, nil)

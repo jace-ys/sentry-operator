@@ -83,9 +83,9 @@ var _ = Describe("TestReconciler", func() {
 			By("with the expected finalizer")
 			Expect(team.Finalizers).To(ContainElement(controllers.TeamFinalizerName))
 
-			By("invoked the Sentry client .Teams.Create method")
-			organization, params := fakeSentryTeams.CreateArgsForCall(fakeSentryTeams.CreateCallCount() - 1)
-			Expect(organization).To(Equal("organization"))
+			By("invoked the Sentry client's .Teams.Create method")
+			organizationSlug, params := fakeSentryTeams.CreateArgsForCall(fakeSentryTeams.CreateCallCount() - 1)
+			Expect(organizationSlug).To(Equal("organization"))
 			Expect(params).To(Equal(&sentry.CreateTeamParams{
 				Name: request.Spec.Name,
 				Slug: request.Spec.Slug,
@@ -173,14 +173,11 @@ var _ = Describe("TestReconciler", func() {
 			By("with the desired spec")
 			Expect(team.Spec).To(Equal(team.Spec))
 
-			By("with the expected status ID")
-			Expect(team.Status.ID).To(Equal("12345"))
-
 			By("invoked the Sentry client's .Teams.List method")
 			organizationSlug := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
 
-			By("invoked the Sentry client .Teams.Update method")
+			By("invoked the Sentry client's .Teams.Update method")
 			organizationSlug, teamSlug, params := fakeSentryTeams.UpdateArgsForCall(fakeSentryTeams.UpdateCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
 			Expect(teamSlug).To(Equal(existing.Slug))
@@ -211,11 +208,11 @@ var _ = Describe("TestReconciler", func() {
 				return k8sClient.Get(ctx, lookupKey, team)
 			}, timeout, interval).ShouldNot(Succeed())
 
-			By("the Sentry client .Teams.List method was called")
+			By("invoked the Sentry client's .Teams.List method")
 			organizationSlug := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
 
-			By("the Sentry client .Teams.Delete method was called")
+			By("invoked the Sentry client's .Teams.Delete method")
 			organizationSlug, teamSlug := fakeSentryTeams.DeleteArgsForCall(fakeSentryTeams.DeleteCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
 			Expect(teamSlug).To(Equal(existing.Slug))

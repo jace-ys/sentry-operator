@@ -53,7 +53,7 @@ var (
 
 	sentryURL          = cmd.Flag("sentry-url", "The URL to use to connect to Sentry.").Envar("SENTRY_URL").Default("https://sentry.io/").URL()
 	sentryToken        = cmd.Flag("sentry-token", "Authentication token belonging to a user under the Sentry organization.").Envar("SENTRY_TOKEN").Required().String()
-	sentryOrganization = cmd.Flag("sentry-organization", "Name of the Sentry organization to be managed.").Envar("SENTRY_ORGANIZATION").Required().String()
+	sentryOrganization = cmd.Flag("sentry-organization", "Slug of the Sentry organization to be managed.").Envar("SENTRY_ORGANIZATION").Required().String()
 )
 
 func init() {
@@ -80,8 +80,13 @@ func main() {
 	}
 
 	sentryClient := sentry.NewClient(*sentryToken, sentry.WithSentryURL(*sentryURL))
+	organization, _, err := sentryClient.Organizations.Get(*sentryOrganization)
+	if err != nil {
+		exit(err, "failed to verify Sentry organization")
+	}
+
 	ctrlSentry := &controllers.Sentry{
-		Organization: *sentryOrganization,
+		Organization: organization.Slug,
 		Client: &controllers.SentryClient{
 			Organizations: sentryClient.Organizations,
 			Projects:      sentryClient.Projects,
