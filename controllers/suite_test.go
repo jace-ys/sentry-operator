@@ -24,8 +24,9 @@ import (
 )
 
 var (
-	testEnv   *envtest.Environment
-	k8sClient client.Client
+	testEnv    *envtest.Environment
+	k8sClient  client.Client
+	k8sManager ctrl.Manager
 )
 
 var (
@@ -59,7 +60,7 @@ var _ = BeforeSuite(func() {
 
 	// +kubebuilder:scaffold:scheme
 
-	k8sManager, err := ctrl.NewManager(cfg, ctrl.Options{
+	k8sManager, err = ctrl.NewManager(cfg, ctrl.Options{
 		Scheme: scheme.Scheme,
 	})
 	Expect(err).ToNot(HaveOccurred())
@@ -80,6 +81,7 @@ var _ = BeforeSuite(func() {
 	err = (&controllers.ProjectReconciler{
 		Client: k8sManager.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Project"),
+		Scheme: k8sManager.GetScheme(),
 		Sentry: ctrlSentry,
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
@@ -87,6 +89,7 @@ var _ = BeforeSuite(func() {
 	err = (&controllers.ProjectKeyReconciler{
 		Client: k8sManager.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ProjectKey"),
+		Scheme: k8sManager.GetScheme(),
 		Sentry: ctrlSentry,
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
@@ -94,6 +97,7 @@ var _ = BeforeSuite(func() {
 	err = (&controllers.TeamReconciler{
 		Client: k8sManager.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Team"),
+		Scheme: k8sManager.GetScheme(),
 		Sentry: ctrlSentry,
 	}).SetupWithManager(k8sManager)
 	Expect(err).ToNot(HaveOccurred())
@@ -126,12 +130,15 @@ func testSentryProject(id, team, name string) *sentry.Project {
 	}
 }
 
-func testSentryProjectKey(id string, projectID int, name string) *sentry.ProjectKey {
+func testSentryProjectKey(id string, projectID int, name, dsn string) *sentry.ProjectKey {
 	return &sentry.ProjectKey{
 		DateCreated: time.Now(),
 		ID:          id,
 		Name:        name,
 		ProjectID:   projectID,
+		DSN: sentry.ProjectKeyDSN{
+			Public: dsn,
+		},
 	}
 }
 

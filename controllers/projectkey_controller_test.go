@@ -3,12 +3,14 @@ package controllers_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -27,18 +29,28 @@ var _ = Describe("ProjectKeyReconciler", func() {
 	)
 
 	var (
-		lookupKey  types.NamespacedName
+		lookupKey       types.NamespacedName
+		secretLookupKey types.NamespacedName
+
 		projectkey *sentryv1alpha1.ProjectKey
+		secret     *corev1.Secret
 	)
 
 	ctx := context.Background()
 
 	BeforeEach(func() {
 		lookupKey = types.NamespacedName{Name: projectkeyName, Namespace: projectkeyNamespace}
+		secretLookupKey = types.NamespacedName{Name: fmt.Sprintf("sentry-projectkey-%s", projectkeyName), Namespace: projectkeyNamespace}
+
 		projectkey = new(sentryv1alpha1.ProjectKey)
+		secret = new(corev1.Secret)
 	})
 
 	Context("when creating a ProjectKey", func() {
+		var (
+			created *sentry.ProjectKey
+		)
+
 		request := &sentryv1alpha1.ProjectKey{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "sentry.kubernetes.jaceys.me/v1alpha1",
@@ -55,8 +67,14 @@ var _ = Describe("ProjectKeyReconciler", func() {
 		}
 
 		BeforeEach(func() {
-			created := testSentryProjectKey("12345", 0, request.Spec.Name)
+			created = testSentryProjectKey("12345", 0, request.Spec.Name, "test-dsn")
 			fakeSentryProjects.CreateKeyReturns(created, newSentryResponse(http.StatusOK), nil)
+
+			project := testSentryProject("0", "test-team", request.Spec.Project)
+			fakeSentryOrganizations.ListProjectsReturns([]sentry.Project{*project}, newSentryResponse(http.StatusOK), nil)
+
+			fakeSentryProjects.ListKeysReturns([]sentry.ProjectKey{*created}, newSentryResponse(http.StatusOK), nil)
+			fakeSentryProjects.UpdateKeyReturns(created, newSentryResponse(http.StatusOK), nil)
 		})
 
 		It("the ProjectKey gets created successfully", func() {
@@ -92,24 +110,54 @@ var _ = Describe("ProjectKeyReconciler", func() {
 				Name: request.Spec.Name,
 			}))
 		})
+
+		It("the Secret gets created successfully", func() {
+			Eventually(func() (map[string][]byte, error) {
+				err := k8sClient.Get(ctx, secretLookupKey, secret)
+				if err != nil {
+					return nil, err
+				}
+				return secret.Data, nil
+			}, timeout, interval).Should(HaveKeyWithValue("SENTRY_DSN", []byte(created.DSN.Public)))
+
+			By("with the expected metadata")
+			Expect(secret.ObjectMeta.Name).To(Equal(fmt.Sprintf("sentry-projectkey-%s", projectkeyName)))
+			Expect(secret.ObjectMeta.Namespace).To(Equal(projectkeyNamespace))
+
+			By("with the expected owner reference")
+			Expect(secret.ObjectMeta.OwnerReferences).To(
+				ContainElement(
+					MatchFields(IgnoreExtras, Fields{
+						"APIVersion": Equal("sentry.kubernetes.jaceys.me/v1alpha1"),
+						"Kind":       Equal("ProjectKey"),
+						"Name":       Equal(request.GetName()),
+						"UID":        Equal(request.GetUID()),
+					}),
+				),
+			)
+		})
 	})
 
 	Context("when updating a ProjectKey", func() {
 		var (
+			project  *sentry.Project
 			existing *sentry.ProjectKey
+			updated  *sentry.ProjectKey
 		)
 
 		BeforeEach(func() {
 			Expect(k8sClient.Get(ctx, lookupKey, projectkey)).To(Succeed())
 
-			project := testSentryProject("0", "test-team", projectkey.Spec.Project)
+			project = testSentryProject("0", "test-team", projectkey.Spec.Project)
 			fakeSentryOrganizations.ListProjectsReturns([]sentry.Project{*project}, newSentryResponse(http.StatusOK), nil)
 
-			existing = testSentryProjectKey("12345", 0, projectkey.Spec.Name)
+			existing = testSentryProjectKey("12345", 0, projectkey.Spec.Name, "test-dsn")
 			fakeSentryProjects.ListKeysReturns([]sentry.ProjectKey{*existing}, newSentryResponse(http.StatusOK), nil)
 
 			projectkey.Spec.Name = "test-project-update"
-			fakeSentryProjects.UpdateKeyReturns(testSentryProjectKey("12345", 0, projectkey.Spec.Name), newSentryResponse(http.StatusOK), nil)
+
+			updated = testSentryProjectKey("12345", 0, projectkey.Spec.Name, "test-dsn-update")
+			fakeSentryProjects.UpdateKeyReturns(updated, newSentryResponse(http.StatusOK), nil)
 		})
 
 		Context("the Sentry client returns an error", func() {
@@ -147,12 +195,12 @@ var _ = Describe("ProjectKeyReconciler", func() {
 				By("invoked the Sentry client's .Projects.ListKeys method")
 				organizationSlug, projectSlug := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
-				Expect(projectSlug).To(Equal(projectkey.Spec.Project))
+				Expect(projectSlug).To(Equal(project.Slug))
 
 				By("invoked the Sentry client's .Projects.UpdateKey method")
 				organizationSlug, projectSlug, keyID, params := fakeSentryProjects.UpdateKeyArgsForCall(fakeSentryProjects.UpdateKeyCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
-				Expect(projectSlug).To(Equal(projectkey.Spec.Project))
+				Expect(projectSlug).To(Equal(project.Slug))
 				Expect(keyID).To(Equal(existing.ID))
 				Expect(params).To(Equal(&sentry.UpdateProjectKeyParams{
 					Name: projectkey.Spec.Name,
@@ -162,10 +210,10 @@ var _ = Describe("ProjectKeyReconciler", func() {
 
 		Context("the associated Sentry project has changed", func() {
 			BeforeEach(func() {
-				project := testSentryProject("0", "test-team", "new-project")
+				project = testSentryProject("0", "test-team", "new-project")
 				fakeSentryOrganizations.ListProjectsReturns([]sentry.Project{*project}, newSentryResponse(http.StatusOK), nil)
 
-				existing = testSentryProjectKey("12345", 0, projectkey.Spec.Name)
+				existing = testSentryProjectKey("12345", 0, projectkey.Spec.Name, "test-dsn")
 				fakeSentryProjects.ListKeysReturns([]sentry.ProjectKey{*existing}, newSentryResponse(http.StatusOK), nil)
 			})
 
@@ -198,7 +246,7 @@ var _ = Describe("ProjectKeyReconciler", func() {
 				By("invoked the Sentry client's .Projects.ListKeys method")
 				organizationSlug, projectSlug := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
-				Expect(projectSlug).To(Equal("new-project"))
+				Expect(projectSlug).To(Equal(project.Slug))
 			})
 		})
 
@@ -231,36 +279,64 @@ var _ = Describe("ProjectKeyReconciler", func() {
 			By("invoked the Sentry client's .Projects.ListKeys method")
 			organizationSlug, projectSlug := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
-			Expect(projectSlug).To(Equal(projectkey.Spec.Project))
+			Expect(projectSlug).To(Equal(project.Slug))
 
 			By("invoked the Sentry client's .Projects.UpdateKey method")
 			organizationSlug, projectSlug, keyID, params := fakeSentryProjects.UpdateKeyArgsForCall(fakeSentryProjects.UpdateKeyCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
-			Expect(projectSlug).To(Equal(projectkey.Spec.Project))
+			Expect(projectSlug).To(Equal(project.Slug))
 			Expect(keyID).To(Equal(existing.ID))
 			Expect(params).To(Equal(&sentry.UpdateProjectKeyParams{
 				Name: projectkey.Spec.Name,
 			}))
 		})
+
+		It("the Secret gets reconciled successfully", func() {
+			By("with the expected secret data")
+			Eventually(func() (map[string][]byte, error) {
+				err := k8sClient.Get(ctx, secretLookupKey, secret)
+				if err != nil {
+					return nil, err
+				}
+				return secret.Data, nil
+			}, timeout, interval).Should(HaveKeyWithValue("SENTRY_DSN", []byte(updated.DSN.Public)))
+
+			By("with the expected metadata")
+			Expect(secret.ObjectMeta.Name).To(Equal(fmt.Sprintf("sentry-projectkey-%s", projectkeyName)))
+			Expect(secret.ObjectMeta.Namespace).To(Equal(projectkeyNamespace))
+
+			By("with the expected owner reference")
+			Expect(secret.ObjectMeta.OwnerReferences).To(
+				ContainElement(
+					MatchFields(IgnoreExtras, Fields{
+						"APIVersion": Equal("sentry.kubernetes.jaceys.me/v1alpha1"),
+						"Kind":       Equal("ProjectKey"),
+						"Name":       Equal(projectkey.GetName()),
+						"UID":        Equal(projectkey.GetUID()),
+					}),
+				),
+			)
+		})
 	})
 
 	Context("when deleting a ProjectKey", func() {
 		var (
+			project  *sentry.Project
 			existing *sentry.ProjectKey
 		)
 
 		BeforeEach(func() {
 			Expect(k8sClient.Get(ctx, lookupKey, projectkey)).To(Succeed())
 
-			project := testSentryProject("0", "test-team", projectkey.Spec.Project)
+			project = testSentryProject("0", "test-team", projectkey.Spec.Project)
 			fakeSentryOrganizations.ListProjectsReturns([]sentry.Project{*project}, newSentryResponse(http.StatusOK), nil)
 
-			existing = testSentryProjectKey("12345", 0, projectkey.Spec.Name)
+			existing = testSentryProjectKey("12345", 0, projectkey.Spec.Name, "test-dsn")
 			fakeSentryProjects.ListKeysReturns([]sentry.ProjectKey{*existing}, newSentryResponse(http.StatusOK), nil)
 			fakeSentryProjects.DeleteReturns(newSentryResponse(http.StatusNoContent), nil)
 		})
 
-		It("the ProjectKey gets deleted succesfully", func() {
+		It("the ProjectKey gets deleted successfully", func() {
 			Expect(k8sClient.Delete(ctx, projectkey)).To(Succeed())
 
 			Eventually(func() error {
@@ -274,12 +350,12 @@ var _ = Describe("ProjectKeyReconciler", func() {
 			By("invoked the Sentry client's .Projects.ListKeys method")
 			organizationSlug, projectSlug := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
-			Expect(projectSlug).To(Equal(projectkey.Spec.Project))
+			Expect(projectSlug).To(Equal(project.Slug))
 
 			By("invoked the Sentry client's .Projects.DeleteKey method")
 			organizationSlug, projectSlug, keyID := fakeSentryProjects.DeleteKeyArgsForCall(fakeSentryProjects.DeleteKeyCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
-			Expect(projectSlug).To(Equal(projectkey.Spec.Project))
+			Expect(projectSlug).To(Equal(project.Slug))
 			Expect(keyID).To(Equal(existing.ID))
 		})
 	})

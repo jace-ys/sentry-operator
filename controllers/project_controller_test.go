@@ -108,7 +108,9 @@ var _ = Describe("ProjectReconciler", func() {
 
 			project.Spec.Name = "test-project-update"
 			project.Spec.Slug = "test-project-update"
-			fakeSentryProjects.UpdateReturns(testSentryProject("12345", project.Spec.Team, project.Spec.Name), newSentryResponse(http.StatusOK), nil)
+
+			updated := testSentryProject("12345", project.Spec.Team, project.Spec.Name)
+			fakeSentryProjects.UpdateReturns(updated, newSentryResponse(http.StatusOK), nil)
 		})
 
 		Context("the Sentry client returns an error", func() {
@@ -236,7 +238,7 @@ var _ = Describe("ProjectReconciler", func() {
 			fakeSentryProjects.DeleteReturns(newSentryResponse(http.StatusNoContent), nil)
 		})
 
-		It("the Project gets deleted succesfully", func() {
+		It("the Project gets deleted successfully", func() {
 			Expect(k8sClient.Delete(ctx, project)).To(Succeed())
 
 			Eventually(func() error {

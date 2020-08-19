@@ -259,6 +259,18 @@ metadata:
   name: sentry-operator-manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - secret
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - sentry.kubernetes.jaceys.me
   resources:
   - projectkeys

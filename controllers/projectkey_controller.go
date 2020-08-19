@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -61,12 +62,14 @@ type ProjectKeyReconciler struct {
 func (r *ProjectKeyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&sentryv1alpha1.ProjectKey{}).
+		Owns(&corev1.Secret{}).
 		WithEventFilter(&predicate.GenerationChangedPredicate{}).
 		Complete(r)
 }
 
 // +kubebuilder:rbac:groups=sentry.kubernetes.jaceys.me,resources=projectkeys,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=sentry.kubernetes.jaceys.me,resources=projectkeys/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core,resources=secret,verbs=get;list;watch;create;update;patch;delete
 
 func (r *ProjectKeyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -84,10 +87,16 @@ func (r *ProjectKeyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 	hasFinalizer := containsFinalizer(projectkey.GetFinalizers(), ProjectKeyFinalizerName)
 
-	// Create our Sentry resource if we have not been synced before
+	// Create our Sentry resource and secret if we have not been synced before
 	if projectkey.Status.LastSynced.IsZero() {
-		if err := r.handleCreate(ctx, &projectkey, hasFinalizer); err != nil {
+		sProjectKey, err := r.handleCreate(ctx, &projectkey, hasFinalizer)
+		if err != nil {
 			log.Error(err, "failed to create ProjectKey")
+			return ctrl.Result{}, r.handleError(ctx, &projectkey, err)
+		}
+
+		if err := r.reconcileSecret(ctx, &projectkey, sProjectKey); err != nil {
+			log.Error(err, "failed to create Secret for ProjectKey")
 			return ctrl.Result{}, r.handleError(ctx, &projectkey, err)
 		}
 
@@ -118,22 +127,41 @@ func (r *ProjectKeyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 	// Our Sentry resource might have been deleted externally of the controller, so attempt to recreate it
 	if errors.Is(err, ErrOutOfSync) {
-		if err := r.handleCreate(ctx, &projectkey, hasFinalizer); err != nil {
+		sProjectKey, err := r.handleCreate(ctx, &projectkey, hasFinalizer)
+		if err != nil {
 			log.Error(err, "failed to recreate ProjectKey")
 			return ctrl.Result{}, r.handleError(ctx, &projectkey, err)
 		}
 
 		log.Info("successfully recreated ProjectKey")
+
+		// Reconcile our secret to ensure that its data matches that found in our Sentry project key
+		if err := r.reconcileSecret(ctx, &projectkey, sProjectKey); err != nil {
+			log.Error(err, "failed to reconcile Secret for ProjectKey")
+			return ctrl.Result{}, r.handleError(ctx, &projectkey, err)
+		}
+
+		log.Info("successfully reconciled Secret for ProjectKey")
+
 		return ctrl.Result{}, nil
 	}
 
 	// Reconcile any differences between our spec and the existing state of our Sentry resource
-	if err := r.handleUpdate(ctx, &projectkey, existing, projectSlug); err != nil {
+	sProjectKey, err := r.handleUpdate(ctx, &projectkey, existing, projectSlug)
+	if err != nil {
 		log.Error(err, "failed to update ProjectKey")
 		return ctrl.Result{}, r.handleError(ctx, &projectkey, err)
 	}
 
 	log.Info("successfully updated ProjectKey")
+
+	// Reconcile our secret to ensure that its data matches that found in our Sentry project key
+	if err := r.reconcileSecret(ctx, &projectkey, sProjectKey); err != nil {
+		log.Error(err, "failed to reconcile Secret for ProjectKey")
+		return ctrl.Result{}, r.handleError(ctx, &projectkey, err)
+	}
+
+	log.Info("successfully reconciled Secret for ProjectKey")
 
 	return ctrl.Result{}, nil
 }
@@ -185,20 +213,20 @@ func (r *ProjectKeyReconciler) getExistingState(projectkey sentryv1alpha1.Projec
 	return nil, "", ErrOutOfSync
 }
 
-func (r *ProjectKeyReconciler) handleCreate(ctx context.Context, projectkey *sentryv1alpha1.ProjectKey, hasFinalizer bool) error {
+func (r *ProjectKeyReconciler) handleCreate(ctx context.Context, projectkey *sentryv1alpha1.ProjectKey, hasFinalizer bool) (*sentry.ProjectKey, error) {
 	sProjectKey, resp, err := r.Sentry.Client.Projects.CreateKey(r.Sentry.Organization, projectkey.Spec.Project, &sentry.CreateProjectKeyParams{
 		Name: projectkey.Spec.Name,
 	})
 	if err != nil {
 		switch {
 		case resp.StatusCode >= 500:
-			return retryableError{err}
+			return nil, retryableError{err}
 		case resp.StatusCode == http.StatusNotFound:
 			// Retry on 404 errors as the error might get resolved once dependencies are satisfied
-			return retryableError{err}
+			return nil, retryableError{err}
 		default:
 			// Don't retry on other 4XX errors as these indicate that we might have an issue with our spec
-			return err
+			return nil, err
 		}
 	}
 
@@ -208,14 +236,41 @@ func (r *ProjectKeyReconciler) handleCreate(ctx context.Context, projectkey *sen
 	projectkey.Status.LastSynced = &metav1.Time{Time: time.Now()}
 	projectkey.Status.ProjectID = strconv.Itoa(sProjectKey.ProjectID)
 	if err := r.Status().Update(ctx, projectkey); err != nil {
-		return retryableError{err}
+		return nil, retryableError{err}
 	}
 
 	if !hasFinalizer {
 		projectkey.SetFinalizers(append(projectkey.GetFinalizers(), ProjectKeyFinalizerName))
 		if err := r.Update(ctx, projectkey); err != nil {
-			return retryableError{err}
+			return nil, retryableError{err}
 		}
+	}
+
+	return sProjectKey, nil
+}
+
+func (r *ProjectKeyReconciler) reconcileSecret(ctx context.Context, projectkey *sentryv1alpha1.ProjectKey, sProjectKey *sentry.ProjectKey) error {
+	secret := &corev1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Secret",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("sentry-projectkey-%s", projectkey.Name),
+			Namespace: projectkey.Namespace,
+		},
+		Data: make(map[string][]byte),
+	}
+
+	if err := ctrl.SetControllerReference(projectkey, secret, r.Scheme); err != nil {
+		return err
+	}
+
+	if _, err := ctrl.CreateOrUpdate(ctx, r.Client, secret, func() error {
+		secret.Data["SENTRY_DSN"] = []byte(sProjectKey.DSN.Public)
+		return nil
+	}); err != nil {
+		return err
 	}
 
 	return nil
@@ -246,12 +301,12 @@ func (r *ProjectKeyReconciler) handleDelete(ctx context.Context, projectkey *sen
 	return nil
 }
 
-func (r *ProjectKeyReconciler) handleUpdate(ctx context.Context, projectkey *sentryv1alpha1.ProjectKey, existing *sentry.ProjectKey, projectSlug string) error {
+func (r *ProjectKeyReconciler) handleUpdate(ctx context.Context, projectkey *sentryv1alpha1.ProjectKey, existing *sentry.ProjectKey, projectSlug string) (*sentry.ProjectKey, error) {
 	// Error if our spec's project doesn't match reality as updating a project key's project is not a valid operation.
 	// This helps highlight configuration drift where a user forgets to update our spec's project after modifying the
 	// associated project's slug.
 	if projectkey.Spec.Project != projectSlug {
-		return retryableError{fmt.Errorf("%w: ProjectKey's project could not be updated", ErrOutOfSync)}
+		return nil, retryableError{fmt.Errorf("%w: ProjectKey's project could not be updated", ErrOutOfSync)}
 	}
 
 	sProjectKey, resp, err := r.Sentry.Client.Projects.UpdateKey(r.Sentry.Organization, projectSlug, existing.ID, &sentry.UpdateProjectKeyParams{
@@ -260,13 +315,13 @@ func (r *ProjectKeyReconciler) handleUpdate(ctx context.Context, projectkey *sen
 	if err != nil {
 		switch {
 		case resp.StatusCode >= 500:
-			return retryableError{err}
+			return nil, retryableError{err}
 		case resp.StatusCode == http.StatusNotFound:
 			// Retry on 404 errors as the error might get resolved once dependencies are satisfied
-			return retryableError{err}
+			return nil, retryableError{err}
 		default:
 			// Don't retry on 4XX errors as these indicate that we might have an issue with our spec
-			return err
+			return nil, err
 		}
 	}
 
@@ -276,10 +331,10 @@ func (r *ProjectKeyReconciler) handleUpdate(ctx context.Context, projectkey *sen
 	projectkey.Status.LastSynced = &metav1.Time{Time: time.Now()}
 	projectkey.Status.ProjectID = strconv.Itoa(sProjectKey.ProjectID)
 	if err := r.Status().Update(ctx, projectkey); err != nil {
-		return retryableError{err}
+		return nil, retryableError{err}
 	}
 
-	return nil
+	return sProjectKey, nil
 }
 
 // handleError is a helper function for annotating our Custom Resource status with the error condition and message. It
