@@ -33,28 +33,28 @@ var _ = Describe("ProjectReconciler", func() {
 
 	ctx := context.Background()
 
+	request := &sentryv1alpha1.Project{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "sentry.kubernetes.jaceys.me/v1alpha1",
+			Kind:       "Project",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      projectName,
+			Namespace: projectNamespace,
+		},
+		Spec: sentryv1alpha1.ProjectSpec{
+			Team: "test-team",
+			Name: "test-project",
+			Slug: "test-project",
+		},
+	}
+
 	BeforeEach(func() {
 		lookupKey = types.NamespacedName{Name: projectName, Namespace: projectNamespace}
 		project = new(sentryv1alpha1.Project)
 	})
 
 	Context("when creating a Project", func() {
-		request := &sentryv1alpha1.Project{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: "sentry.kubernetes.jaceys.me/v1alpha1",
-				Kind:       "Project",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      projectName,
-				Namespace: projectNamespace,
-			},
-			Spec: sentryv1alpha1.ProjectSpec{
-				Team: "test-team",
-				Name: "test-project",
-				Slug: "test-project",
-			},
-		}
-
 		BeforeEach(func() {
 			created := testSentryProject("12345", request.Spec.Team, request.Spec.Name)
 			fakeSentryTeams.CreateProjectReturns(created, newSentryResponse(http.StatusOK), nil)
@@ -79,7 +79,11 @@ var _ = Describe("ProjectReconciler", func() {
 			)
 
 			By("with the desired spec")
-			Expect(project.Spec).To(Equal(request.Spec))
+			Expect(project.Spec).To(Equal(sentryv1alpha1.ProjectSpec{
+				Team: "test-team",
+				Name: "test-project",
+				Slug: "test-project",
+			}))
 
 			By("with the expected finalizer")
 			Expect(project.Finalizers).To(ContainElement(controllers.ProjectFinalizerName))
@@ -139,7 +143,14 @@ var _ = Describe("ProjectReconciler", func() {
 				)
 
 				By("with the desired spec")
-				Expect(project.Spec).To(Equal(project.Spec))
+				Expect(project.Spec).To(Equal(sentryv1alpha1.ProjectSpec{
+					Team: "test-team",
+					Name: "test-project-error",
+					Slug: "test-project-error",
+				}))
+
+				By("with the expected finalizer")
+				Expect(project.Finalizers).To(ContainElement(controllers.ProjectFinalizerName))
 
 				By("invoked the Sentry client's .Organizations.ListProjects method")
 				organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
@@ -182,7 +193,14 @@ var _ = Describe("ProjectReconciler", func() {
 				)
 
 				By("with the desired spec")
-				Expect(project.Spec).To(Equal(project.Spec))
+				Expect(project.Spec).To(Equal(sentryv1alpha1.ProjectSpec{
+					Team: "test-team",
+					Name: "test-project-update",
+					Slug: "test-project-update",
+				}))
+
+				By("with the expected finalizer")
+				Expect(project.Finalizers).To(ContainElement(controllers.ProjectFinalizerName))
 
 				By("invoked the Sentry client's .Organizations.ListProjects method")
 				organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
@@ -210,7 +228,14 @@ var _ = Describe("ProjectReconciler", func() {
 			)
 
 			By("with the desired spec")
-			Expect(project.Spec).To(Equal(project.Spec))
+			Expect(project.Spec).To(Equal(sentryv1alpha1.ProjectSpec{
+				Team: "test-team",
+				Name: "test-project-update",
+				Slug: "test-project-update",
+			}))
+
+			By("with the expected finalizer")
+			Expect(project.Finalizers).To(ContainElement(controllers.ProjectFinalizerName))
 
 			By("invoked the Sentry client's .Organizations.ListProjects method")
 			organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)

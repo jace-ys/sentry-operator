@@ -38,6 +38,27 @@ var _ = Describe("ProjectKeyReconciler", func() {
 
 	ctx := context.Background()
 
+	request := &sentryv1alpha1.ProjectKey{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "sentry.kubernetes.jaceys.me/v1alpha1",
+			Kind:       "ProjectKey",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      projectkeyName,
+			Namespace: projectkeyNamespace,
+			Labels: map[string]string{
+				"label": "test-label",
+			},
+			Annotations: map[string]string{
+				"annotation": "test-annotation",
+			},
+		},
+		Spec: sentryv1alpha1.ProjectKeySpec{
+			Project: "test-project",
+			Name:    "test-projectkey",
+		},
+	}
+
 	BeforeEach(func() {
 		lookupKey = types.NamespacedName{Name: projectkeyName, Namespace: projectkeyNamespace}
 		secretLookupKey = types.NamespacedName{Name: fmt.Sprintf("sentry-projectkey-%s", projectkeyName), Namespace: projectkeyNamespace}
@@ -50,21 +71,6 @@ var _ = Describe("ProjectKeyReconciler", func() {
 		var (
 			created *sentry.ProjectKey
 		)
-
-		request := &sentryv1alpha1.ProjectKey{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: "sentry.kubernetes.jaceys.me/v1alpha1",
-				Kind:       "ProjectKey",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      projectkeyName,
-				Namespace: projectkeyNamespace,
-			},
-			Spec: sentryv1alpha1.ProjectKeySpec{
-				Project: "test-project",
-				Name:    "test-projectkey",
-			},
-		}
 
 		BeforeEach(func() {
 			created = testSentryProjectKey("12345", 0, request.Spec.Name, "test-dsn")
@@ -97,7 +103,10 @@ var _ = Describe("ProjectKeyReconciler", func() {
 			)
 
 			By("with the desired spec")
-			Expect(projectkey.Spec).To(Equal(request.Spec))
+			Expect(projectkey.Spec).To(Equal(sentryv1alpha1.ProjectKeySpec{
+				Project: "test-project",
+				Name:    "test-projectkey",
+			}))
 
 			By("with the expected finalizer")
 			Expect(projectkey.Finalizers).To(ContainElement(controllers.ProjectKeyFinalizerName))
@@ -121,8 +130,12 @@ var _ = Describe("ProjectKeyReconciler", func() {
 			}, timeout, interval).Should(HaveKeyWithValue("SENTRY_DSN", []byte(created.DSN.Public)))
 
 			By("with the expected metadata")
-			Expect(secret.ObjectMeta.Name).To(Equal(fmt.Sprintf("sentry-projectkey-%s", projectkeyName)))
-			Expect(secret.ObjectMeta.Namespace).To(Equal(projectkeyNamespace))
+			Expect(secret.Name).To(Equal(fmt.Sprintf("sentry-projectkey-%s", projectkeyName)))
+			Expect(secret.Namespace).To(Equal(projectkeyNamespace))
+
+			By("with the desired labels and annotations")
+			Expect(secret.Labels).To(HaveKeyWithValue("label", "test-label"))
+			Expect(secret.Annotations).To(HaveKeyWithValue("annotation", "test-annotation"))
 
 			By("with the expected owner reference")
 			Expect(secret.ObjectMeta.OwnerReferences).To(
@@ -154,7 +167,7 @@ var _ = Describe("ProjectKeyReconciler", func() {
 			existing = testSentryProjectKey("12345", 0, projectkey.Spec.Name, "test-dsn")
 			fakeSentryProjects.ListKeysReturns([]sentry.ProjectKey{*existing}, newSentryResponse(http.StatusOK), nil)
 
-			projectkey.Spec.Name = "test-project-update"
+			projectkey.Spec.Name = "test-projectkey-update"
 
 			updated = testSentryProjectKey("12345", 0, projectkey.Spec.Name, "test-dsn-update")
 			fakeSentryProjects.UpdateKeyReturns(updated, newSentryResponse(http.StatusOK), nil)
@@ -186,7 +199,13 @@ var _ = Describe("ProjectKeyReconciler", func() {
 				)
 
 				By("with the desired spec")
-				Expect(projectkey.Spec).To(Equal(projectkey.Spec))
+				Expect(projectkey.Spec).To(Equal(sentryv1alpha1.ProjectKeySpec{
+					Project: "test-project",
+					Name:    "test-projectkey-error",
+				}))
+
+				By("with the expected finalizer")
+				Expect(projectkey.Finalizers).To(ContainElement(controllers.ProjectKeyFinalizerName))
 
 				By("invoked the Sentry client's .Organizations.ListProjects method")
 				organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
@@ -239,7 +258,13 @@ var _ = Describe("ProjectKeyReconciler", func() {
 				)
 
 				By("with the desired spec")
-				Expect(projectkey.Spec).To(Equal(projectkey.Spec))
+				Expect(projectkey.Spec).To(Equal(sentryv1alpha1.ProjectKeySpec{
+					Project: "test-project",
+					Name:    "test-projectkey-update",
+				}))
+
+				By("with the expected finalizer")
+				Expect(projectkey.Finalizers).To(ContainElement(controllers.ProjectKeyFinalizerName))
 
 				By("invoked the Sentry client's .Organizations.ListProjects method")
 				organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
@@ -274,7 +299,13 @@ var _ = Describe("ProjectKeyReconciler", func() {
 			)
 
 			By("with the desired spec")
-			Expect(projectkey.Spec).To(Equal(projectkey.Spec))
+			Expect(projectkey.Spec).To(Equal(sentryv1alpha1.ProjectKeySpec{
+				Project: "test-project",
+				Name:    "test-projectkey-update",
+			}))
+
+			By("with the expected finalizer")
+			Expect(projectkey.Finalizers).To(ContainElement(controllers.ProjectKeyFinalizerName))
 
 			By("invoked the Sentry client's .Organizations.ListProjects method")
 			organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
@@ -310,6 +341,10 @@ var _ = Describe("ProjectKeyReconciler", func() {
 			By("with the expected metadata")
 			Expect(secret.ObjectMeta.Name).To(Equal(fmt.Sprintf("sentry-projectkey-%s", projectkeyName)))
 			Expect(secret.ObjectMeta.Namespace).To(Equal(projectkeyNamespace))
+
+			By("with the desired labels and annotations")
+			Expect(secret.Labels).To(HaveKeyWithValue("label", "test-label"))
+			Expect(secret.Annotations).To(HaveKeyWithValue("annotation", "test-annotation"))
 
 			By("with the expected owner reference")
 			Expect(secret.ObjectMeta.OwnerReferences).To(

@@ -33,27 +33,27 @@ var _ = Describe("TestReconciler", func() {
 
 	ctx := context.Background()
 
+	request := &sentryv1alpha1.Team{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "sentry.kubernetes.jaceys.me/v1alpha1",
+			Kind:       "Team",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      teamName,
+			Namespace: teamNamespace,
+		},
+		Spec: sentryv1alpha1.TeamSpec{
+			Name: "test-team",
+			Slug: "test-team",
+		},
+	}
+
 	BeforeEach(func() {
 		lookupKey = types.NamespacedName{Name: teamName, Namespace: teamNamespace}
 		team = new(sentryv1alpha1.Team)
 	})
 
 	Context("when creating a Team", func() {
-		request := &sentryv1alpha1.Team{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: "sentry.kubernetes.jaceys.me/v1alpha1",
-				Kind:       "Team",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      teamName,
-				Namespace: teamNamespace,
-			},
-			Spec: sentryv1alpha1.TeamSpec{
-				Name: "test-team",
-				Slug: "test-team",
-			},
-		}
-
 		BeforeEach(func() {
 			created := testSentryTeam("12345", request.Spec.Name)
 			fakeSentryTeams.CreateReturns(created, newSentryResponse(http.StatusOK), nil)
@@ -78,7 +78,10 @@ var _ = Describe("TestReconciler", func() {
 			)
 
 			By("with the desired spec")
-			Expect(team.Spec).To(Equal(request.Spec))
+			Expect(team.Spec).To(Equal(sentryv1alpha1.TeamSpec{
+				Name: "test-team",
+				Slug: "test-team",
+			}))
 
 			By("with the expected finalizer")
 			Expect(team.Finalizers).To(ContainElement(controllers.TeamFinalizerName))
@@ -137,7 +140,13 @@ var _ = Describe("TestReconciler", func() {
 				)
 
 				By("with the desired spec")
-				Expect(team.Spec).To(Equal(team.Spec))
+				Expect(team.Spec).To(Equal(sentryv1alpha1.TeamSpec{
+					Name: "test-team-error",
+					Slug: "test-team-error",
+				}))
+
+				By("with the expected finalizer")
+				Expect(team.Finalizers).To(ContainElement(controllers.TeamFinalizerName))
 
 				By("invoked the Sentry client's .Teams.List method")
 				organizationSlug, opts := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)
@@ -174,7 +183,13 @@ var _ = Describe("TestReconciler", func() {
 			)
 
 			By("with the desired spec")
-			Expect(team.Spec).To(Equal(team.Spec))
+			Expect(team.Spec).To(Equal(sentryv1alpha1.TeamSpec{
+				Name: "test-team-update",
+				Slug: "test-team-update",
+			}))
+
+			By("with the expected finalizer")
+			Expect(team.Finalizers).To(ContainElement(controllers.TeamFinalizerName))
 
 			By("invoked the Sentry client's .Teams.List method")
 			organizationSlug, opts := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)

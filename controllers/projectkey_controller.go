@@ -276,8 +276,10 @@ func (r *ProjectKeyReconciler) reconcileSecret(ctx context.Context, projectkey *
 			Kind:       "Secret",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("sentry-projectkey-%s", projectkey.Name),
-			Namespace: projectkey.Namespace,
+			Name:        fmt.Sprintf("sentry-projectkey-%s", projectkey.Name),
+			Namespace:   projectkey.Namespace,
+			Labels:      make(map[string]string),
+			Annotations: make(map[string]string),
 		},
 		Data: make(map[string][]byte),
 	}
@@ -287,6 +289,14 @@ func (r *ProjectKeyReconciler) reconcileSecret(ctx context.Context, projectkey *
 	}
 
 	if _, err := ctrl.CreateOrUpdate(ctx, r.Client, secret, func() error {
+		for k, v := range projectkey.Labels {
+			secret.Labels[k] = v
+		}
+
+		for k, v := range projectkey.Annotations {
+			secret.Annotations[k] = v
+		}
+
 		secret.Data["SENTRY_DSN"] = []byte(sProjectKey.DSN.Public)
 		return nil
 	}); err != nil {
