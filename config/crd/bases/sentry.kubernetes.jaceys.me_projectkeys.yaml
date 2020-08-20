@@ -21,12 +21,13 @@ spec:
     listKind: ProjectKeyList
     plural: projectkeys
     singular: projectkey
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: ProjectKey is the Schema for the projectkeys API
+      description: ProjectKey is the Schema for the projectkeys API.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -41,26 +42,43 @@ spec:
         metadata:
           type: object
         spec:
-          description: ProjectKeySpec defines the desired state of ProjectKey
+          description: ProjectKeySpec defines the desired state of ProjectKey.
           properties:
             name:
+              description: Name of the Sentry project key.
               type: string
             project:
+              description: Slug of the Sentry project that this project key should
+                be created under.
               type: string
           type: object
         status:
-          description: ProjectKeyStatus defines the observed state of ProjectKey
+          description: ProjectKeyStatus defines the observed state of ProjectKey.
           properties:
             condition:
+              description: The state of the Sentry project key. "Created" indicates
+                that the Sentry project key was created successfully. "Error" indicates
+                that an error occurred while trying to reconcile the Sentry project
+                key.
+              enum:
+              - Created
+              - Error
               type: string
             id:
+              description: The ID of the Sentry project key.
               type: string
             lastSynced:
+              description: The time that the Sentry project key was last successfully
+                reconciled.
               format: date-time
               type: string
             message:
+              description: Additional detail about any errors that occurred while
+                trying to reconcile the Sentry project key.
               type: string
             projectID:
+              description: The ID of the Sentry project that this project key belongs
+                to.
               type: string
           type: object
       type: object

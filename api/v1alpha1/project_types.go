@@ -30,13 +30,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ProjectSpec defines the desired state of Project
+// ProjectSpec defines the desired state of Project.
 type ProjectSpec struct {
+	// Slug of the Sentry team that this project should be created under.
 	Team string `json:"team,omitempty"`
+
+	// Name of the Sentry project.
 	Name string `json:"name,omitempty"`
+
+	// Slug of the Sentry project.
 	Slug string `json:"slug,omitempty"`
 }
 
+// +kubebuilder:validation:Enum=Created;Error
 type ProjectCondition string
 
 const (
@@ -44,12 +50,20 @@ const (
 	ProjectConditionError   ProjectCondition = "Error"
 )
 
-// ProjectStatus defines the observed state of Project
+// ProjectStatus defines the observed state of Project.
 type ProjectStatus struct {
+	// The state of the Sentry project.
+	// "Created" indicates that the Sentry project was created successfully.
+	// "Error" indicates that an error occurred while trying to reconcile the Sentry project.
 	Condition ProjectCondition `json:"condition,omitempty"`
-	Message   string           `json:"message,omitempty"`
 
-	ID         string       `json:"id,omitempty"`
+	// Additional detail about any errors that occurred while trying to reconcile the Sentry project.
+	Message string `json:"message,omitempty"`
+
+	// The ID of the Sentry project.
+	ID string `json:"id,omitempty"`
+
+	// The time that the Sentry project was last successfully reconciled.
 	LastSynced *metav1.Time `json:"lastSynced,omitempty"`
 }
 
@@ -58,7 +72,7 @@ type ProjectStatus struct {
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 // +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.condition`
 
-// Project is the Schema for the projects API
+// Project is the Schema for the projects API.
 type Project struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -69,7 +83,7 @@ type Project struct {
 
 // +kubebuilder:object:root=true
 
-// ProjectList contains a list of Project
+// ProjectList contains a list of Project.
 type ProjectList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

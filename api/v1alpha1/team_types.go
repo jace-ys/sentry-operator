@@ -30,12 +30,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// TeamSpec defines the desired state of Team
+// TeamSpec defines the desired state of Team.
 type TeamSpec struct {
+	// Name of the Sentry team.
 	Name string `json:"name,omitempty"`
+
+	// Slug of the Sentry team.
 	Slug string `json:"slug,omitempty"`
 }
 
+// +kubebuilder:validation:Enum=Created;Error
 type TeamCondition string
 
 const (
@@ -43,12 +47,20 @@ const (
 	TeamConditionError   TeamCondition = "Error"
 )
 
-// TeamStatus defines the observed state of Team
+// TeamStatus defines the observed state of Team.
 type TeamStatus struct {
+	// The state of the Sentry team.
+	// "Created" indicates that the Sentry team was created successfully.
+	// "Error" indicates that an error occurred while trying to reconcile the Sentry team.
 	Condition TeamCondition `json:"condition,omitempty"`
-	Message   string        `json:"message,omitempty"`
 
-	ID         string       `json:"id,omitempty"`
+	// Additional detail about any errors that occurred while trying to reconcile the Sentry team.
+	Message string `json:"message,omitempty"`
+
+	// The ID of the Sentry team.
+	ID string `json:"id,omitempty"`
+
+	// The time that the Sentry team was last successfully reconciled.
 	LastSynced *metav1.Time `json:"lastSynced,omitempty"`
 }
 
@@ -57,7 +69,7 @@ type TeamStatus struct {
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 // +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.condition`
 
-// Team is the Schema for the teams API
+// Team is the Schema for the teams API.
 type Team struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -68,7 +80,7 @@ type Team struct {
 
 // +kubebuilder:object:root=true
 
-// TeamList contains a list of Team
+// TeamList contains a list of Team.
 type TeamList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

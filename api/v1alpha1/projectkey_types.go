@@ -30,12 +30,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ProjectKeySpec defines the desired state of ProjectKey
+// ProjectKeySpec defines the desired state of ProjectKey.
 type ProjectKeySpec struct {
+	// Slug of the Sentry project that this project key should be created under.
 	Project string `json:"project,omitempty"`
-	Name    string `json:"name,omitempty"`
+
+	// Name of the Sentry project key.
+	Name string `json:"name,omitempty"`
 }
 
+// +kubebuilder:validation:Enum=Created;Error
 type ProjectKeyCondition string
 
 const (
@@ -43,14 +47,24 @@ const (
 	ProjectKeyConditionError   ProjectKeyCondition = "Error"
 )
 
-// ProjectKeyStatus defines the observed state of ProjectKey
+// ProjectKeyStatus defines the observed state of ProjectKey.
 type ProjectKeyStatus struct {
+	// The state of the Sentry project key.
+	// "Created" indicates that the Sentry project key was created successfully.
+	// "Error" indicates that an error occurred while trying to reconcile the Sentry project key.
 	Condition ProjectKeyCondition `json:"condition,omitempty"`
-	Message   string              `json:"message,omitempty"`
 
-	ID         string       `json:"id,omitempty"`
+	// Additional detail about any errors that occurred while trying to reconcile the Sentry project key.
+	Message string `json:"message,omitempty"`
+
+	// The ID of the Sentry project key.
+	ID string `json:"id,omitempty"`
+
+	// The time that the Sentry project key was last successfully reconciled.
 	LastSynced *metav1.Time `json:"lastSynced,omitempty"`
-	ProjectID  string       `json:"projectID,omitempty"`
+
+	// The ID of the Sentry project that this project key belongs to.
+	ProjectID string `json:"projectID,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -58,7 +72,7 @@ type ProjectKeyStatus struct {
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 // +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.condition`
 
-// ProjectKey is the Schema for the projectkeys API
+// ProjectKey is the Schema for the projectkeys API.
 type ProjectKey struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -69,7 +83,7 @@ type ProjectKey struct {
 
 // +kubebuilder:object:root=true
 
-// ProjectKeyList contains a list of ProjectKey
+// ProjectKeyList contains a list of ProjectKey.
 type ProjectKeyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

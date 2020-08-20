@@ -21,12 +21,13 @@ spec:
     listKind: ProjectList
     plural: projects
     singular: project
+  preserveUnknownFields: false
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Project is the Schema for the projects API
+      description: Project is the Schema for the projects API.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -41,26 +42,41 @@ spec:
         metadata:
           type: object
         spec:
-          description: ProjectSpec defines the desired state of Project
+          description: ProjectSpec defines the desired state of Project.
           properties:
             name:
+              description: Name of the Sentry project.
               type: string
             slug:
+              description: Slug of the Sentry project.
               type: string
             team:
+              description: Slug of the Sentry team that this project should be created
+                under.
               type: string
           type: object
         status:
-          description: ProjectStatus defines the observed state of Project
+          description: ProjectStatus defines the observed state of Project.
           properties:
             condition:
+              description: The state of the Sentry project. "Created" indicates that
+                the Sentry project was created successfully. "Error" indicates that
+                an error occurred while trying to reconcile the Sentry project.
+              enum:
+              - Created
+              - Error
               type: string
             id:
+              description: The ID of the Sentry project.
               type: string
             lastSynced:
+              description: The time that the Sentry project was last successfully
+                reconciled.
               format: date-time
               type: string
             message:
+              description: Additional detail about any errors that occurred while
+                trying to reconcile the Sentry project.
               type: string
           type: object
       type: object
