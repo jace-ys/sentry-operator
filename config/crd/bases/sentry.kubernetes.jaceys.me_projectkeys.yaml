@@ -46,11 +46,18 @@ spec:
           properties:
             name:
               description: Name of the Sentry project key.
+              maxLength: 50
+              minLength: 1
               type: string
             project:
               description: Slug of the Sentry project that this project key should
                 be created under.
+              maxLength: 50
+              minLength: 1
               type: string
+          required:
+          - name
+          - project
           type: object
         status:
           description: ProjectKeyStatus defines the observed state of ProjectKey.

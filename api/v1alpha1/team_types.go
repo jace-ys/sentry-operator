@@ -32,11 +32,15 @@ import (
 
 // TeamSpec defines the desired state of Team.
 type TeamSpec struct {
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=50
 	// Name of the Sentry team.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=50
 	// Slug of the Sentry team.
-	Slug string `json:"slug,omitempty"`
+	Slug string `json:"slug"`
 }
 
 // +kubebuilder:validation:Enum=Created;Error

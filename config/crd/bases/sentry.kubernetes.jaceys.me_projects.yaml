@@ -46,14 +46,24 @@ spec:
           properties:
             name:
               description: Name of the Sentry project.
+              maxLength: 50
+              minLength: 1
               type: string
             slug:
               description: Slug of the Sentry project.
+              maxLength: 50
+              minLength: 1
               type: string
             team:
               description: Slug of the Sentry team that this project should be created
                 under.
+              maxLength: 50
+              minLength: 1
               type: string
+          required:
+          - name
+          - slug
+          - team
           type: object
         status:
           description: ProjectStatus defines the observed state of Project.

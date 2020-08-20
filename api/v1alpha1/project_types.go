@@ -32,14 +32,20 @@ import (
 
 // ProjectSpec defines the desired state of Project.
 type ProjectSpec struct {
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=50
 	// Slug of the Sentry team that this project should be created under.
-	Team string `json:"team,omitempty"`
+	Team string `json:"team"`
 
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=50
 	// Name of the Sentry project.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=50
 	// Slug of the Sentry project.
-	Slug string `json:"slug,omitempty"`
+	Slug string `json:"slug"`
 }
 
 // +kubebuilder:validation:Enum=Created;Error

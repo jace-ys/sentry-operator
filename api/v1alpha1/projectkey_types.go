@@ -32,11 +32,15 @@ import (
 
 // ProjectKeySpec defines the desired state of ProjectKey.
 type ProjectKeySpec struct {
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=50
 	// Slug of the Sentry project that this project key should be created under.
-	Project string `json:"project,omitempty"`
+	Project string `json:"project"`
 
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=50
 	// Name of the Sentry project key.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 // +kubebuilder:validation:Enum=Created;Error
