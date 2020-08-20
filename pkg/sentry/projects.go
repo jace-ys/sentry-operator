@@ -29,8 +29,15 @@ type Project struct {
 	Teams        []Team       `json:"teams"`
 }
 
-func (s *ProjectsService) List() ([]Project, *Response, error) {
-	req, err := s.client.newRequest(http.MethodGet, "/projects", nil)
+func (s *ProjectsService) List(opts *ListOptions) ([]Project, *Response, error) {
+	var endpoint string
+	if opts.Cursor == "" {
+		endpoint = "/projects"
+	} else {
+		endpoint = fmt.Sprintf("/projects/?&cursor=%s", opts.Cursor)
+	}
+
+	req, err := s.client.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -118,8 +125,14 @@ type ProjectKeyRateLimit struct {
 	Count  int `json:"count"`
 }
 
-func (s *ProjectsService) ListKeys(organizationSlug, projectSlug string) ([]ProjectKey, *Response, error) {
-	endpoint := fmt.Sprintf("/projects/%s/%s/keys", organizationSlug, projectSlug)
+func (s *ProjectsService) ListKeys(organizationSlug, projectSlug string, opts *ListOptions) ([]ProjectKey, *Response, error) {
+	var endpoint string
+	if opts.Cursor == "" {
+		endpoint = fmt.Sprintf("/projects/%s/%s/keys", organizationSlug, projectSlug)
+	} else {
+		endpoint = fmt.Sprintf("/projects/%s/%s/keys/?&cursor=%s", organizationSlug, projectSlug, opts.Cursor)
+	}
+
 	req, err := s.client.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, nil, err

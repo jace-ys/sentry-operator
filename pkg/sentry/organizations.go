@@ -36,8 +36,14 @@ func (s *OrganizationsService) Get(organizationSlug string) (*Organization, *Res
 	return organization, resp, err
 }
 
-func (s *OrganizationsService) ListProjects(organizationSlug string) ([]Project, *Response, error) {
-	endpoint := fmt.Sprintf("/organizations/%s/projects", organizationSlug)
+func (s *OrganizationsService) ListProjects(organizationSlug string, opts *ListOptions) ([]Project, *Response, error) {
+	var endpoint string
+	if opts.Cursor == "" {
+		endpoint = fmt.Sprintf("/organizations/%s/projects", organizationSlug)
+	} else {
+		endpoint = fmt.Sprintf("/organizations/%s/projects/?&cursor=%s", organizationSlug, opts.Cursor)
+	}
+
 	req, err := s.client.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, nil, err

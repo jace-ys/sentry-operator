@@ -55,11 +55,12 @@ type FakeSentryProjects struct {
 		result1 *sentry.Response
 		result2 error
 	}
-	ListKeysStub        func(string, string) ([]sentry.ProjectKey, *sentry.Response, error)
+	ListKeysStub        func(string, string, *sentry.ListOptions) ([]sentry.ProjectKey, *sentry.Response, error)
 	listKeysMutex       sync.RWMutex
 	listKeysArgsForCall []struct {
 		arg1 string
 		arg2 string
+		arg3 *sentry.ListOptions
 	}
 	listKeysReturns struct {
 		result1 []sentry.ProjectKey
@@ -307,17 +308,18 @@ func (fake *FakeSentryProjects) DeleteKeyReturnsOnCall(i int, result1 *sentry.Re
 	}{result1, result2}
 }
 
-func (fake *FakeSentryProjects) ListKeys(arg1 string, arg2 string) ([]sentry.ProjectKey, *sentry.Response, error) {
+func (fake *FakeSentryProjects) ListKeys(arg1 string, arg2 string, arg3 *sentry.ListOptions) ([]sentry.ProjectKey, *sentry.Response, error) {
 	fake.listKeysMutex.Lock()
 	ret, specificReturn := fake.listKeysReturnsOnCall[len(fake.listKeysArgsForCall)]
 	fake.listKeysArgsForCall = append(fake.listKeysArgsForCall, struct {
 		arg1 string
 		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("ListKeys", []interface{}{arg1, arg2})
+		arg3 *sentry.ListOptions
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("ListKeys", []interface{}{arg1, arg2, arg3})
 	fake.listKeysMutex.Unlock()
 	if fake.ListKeysStub != nil {
-		return fake.ListKeysStub(arg1, arg2)
+		return fake.ListKeysStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
@@ -332,17 +334,17 @@ func (fake *FakeSentryProjects) ListKeysCallCount() int {
 	return len(fake.listKeysArgsForCall)
 }
 
-func (fake *FakeSentryProjects) ListKeysCalls(stub func(string, string) ([]sentry.ProjectKey, *sentry.Response, error)) {
+func (fake *FakeSentryProjects) ListKeysCalls(stub func(string, string, *sentry.ListOptions) ([]sentry.ProjectKey, *sentry.Response, error)) {
 	fake.listKeysMutex.Lock()
 	defer fake.listKeysMutex.Unlock()
 	fake.ListKeysStub = stub
 }
 
-func (fake *FakeSentryProjects) ListKeysArgsForCall(i int) (string, string) {
+func (fake *FakeSentryProjects) ListKeysArgsForCall(i int) (string, string, *sentry.ListOptions) {
 	fake.listKeysMutex.RLock()
 	defer fake.listKeysMutex.RUnlock()
 	argsForCall := fake.listKeysArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeSentryProjects) ListKeysReturns(result1 []sentry.ProjectKey, result2 *sentry.Response, result3 error) {

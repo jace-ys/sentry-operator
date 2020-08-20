@@ -142,8 +142,9 @@ var _ = Describe("ProjectReconciler", func() {
 				Expect(project.Spec).To(Equal(project.Spec))
 
 				By("invoked the Sentry client's .Organizations.ListProjects method")
-				organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
+				organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
+				Expect(opts.Cursor).To(BeEmpty())
 
 				By("invoked the Sentry client's .Projects.Update method")
 				organizationSlug, projectSlug, params := fakeSentryProjects.UpdateArgsForCall(fakeSentryProjects.UpdateCallCount() - 1)
@@ -184,8 +185,9 @@ var _ = Describe("ProjectReconciler", func() {
 				Expect(project.Spec).To(Equal(project.Spec))
 
 				By("invoked the Sentry client's .Organizations.ListProjects method")
-				organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
+				organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
+				Expect(opts.Cursor).To(BeEmpty())
 			})
 		})
 
@@ -211,8 +213,9 @@ var _ = Describe("ProjectReconciler", func() {
 			Expect(project.Spec).To(Equal(project.Spec))
 
 			By("invoked the Sentry client's .Organizations.ListProjects method")
-			organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
+			organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
+			Expect(opts.Cursor).To(BeEmpty())
 
 			By("invoked the Sentry client's .Projects.Update method")
 			organizationSlug, projectSlug, params := fakeSentryProjects.UpdateArgsForCall(fakeSentryProjects.UpdateCallCount() - 1)
@@ -246,8 +249,9 @@ var _ = Describe("ProjectReconciler", func() {
 			}, timeout, interval).ShouldNot(Succeed())
 
 			By("invoked the Sentry client's .Organizations.ListProjects method")
-			organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
+			organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
+			Expect(opts.Cursor).To(BeEmpty())
 
 			By("invoked the Sentry client's .Projects.Delete method")
 			organizationSlug, projectSlug := fakeSentryProjects.DeleteArgsForCall(fakeSentryProjects.DeleteCallCount() - 1)

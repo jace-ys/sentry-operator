@@ -140,17 +140,27 @@ func (r *ProjectReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 // getExistingState retrieves the true state of the resource that exists in Sentry using its constant resource ID, and
 // returns an ErrOutOfSync error if the resource cannot be found.
 func (r *ProjectReconciler) getExistingState(project sentryv1alpha1.Project) (*sentry.Project, error) {
-	// List our organization's projects instead of team's as when a Sentry team gets deleted, the projects under it get
-	// orphaned under the organization.
-	sProjects, resp, err := r.Sentry.Client.Organizations.ListProjects(r.Sentry.Organization)
-	if err != nil {
-		switch {
-		case resp.StatusCode >= 500:
-			return nil, retryableError{err}
-		default:
-			// Don't retry on 4XX errors as these indicate that there might be an issue with our organization
-			return nil, err
+	opts := &sentry.ListOptions{}
+	var sProjects []sentry.Project
+	for {
+		// List our organization's projects instead of team's as when a Sentry team gets deleted, the projects under it get
+		// orphaned under the organization.
+		projects, resp, err := r.Sentry.Client.Organizations.ListProjects(r.Sentry.Organization, opts)
+		if err != nil {
+			switch {
+			case resp.StatusCode >= 500:
+				return nil, retryableError{err}
+			default:
+				// Don't retry on 4XX errors as these indicate that there might be an issue with our organization
+				return nil, err
+			}
 		}
+
+		sProjects = append(sProjects, projects...)
+		if !resp.NextPage.Results {
+			break
+		}
+		opts.Cursor = resp.NextPage.Cursor
 	}
 
 	for idx, sProject := range sProjects {

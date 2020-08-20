@@ -156,5 +156,9 @@ func newSentryResponse(statusCode int) *sentry.Response {
 		Response: &http.Response{
 			StatusCode: statusCode,
 		},
+		NextPage: &sentry.Page{
+			Cursor:  "0:0:0",
+			Results: false,
+		},
 	}
 }

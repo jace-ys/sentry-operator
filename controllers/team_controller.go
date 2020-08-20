@@ -139,15 +139,26 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 // getExistingState retrieves the true state of the resource that exists in Sentry using its constant resource ID, and
 // returns an ErrOutOfSync error if the resource cannot be found.
 func (r *TeamReconciler) getExistingState(team sentryv1alpha1.Team) (*sentry.Team, error) {
-	sTeams, resp, err := r.Sentry.Client.Teams.List(r.Sentry.Organization)
-	if err != nil {
-		switch {
-		case resp.StatusCode >= 500:
-			return nil, retryableError{err}
-		default:
-			// Don't retry on 4XX errors as these indicate that there might be an issue with our organization
-			return nil, err
+	opts := &sentry.ListOptions{}
+
+	var sTeams []sentry.Team
+	for {
+		teams, resp, err := r.Sentry.Client.Teams.List(r.Sentry.Organization, opts)
+		if err != nil {
+			switch {
+			case resp.StatusCode >= 500:
+				return nil, retryableError{err}
+			default:
+				// Don't retry on 4XX errors as these indicate that there might be an issue with our organization
+				return nil, err
+			}
 		}
+
+		sTeams = append(sTeams, teams...)
+		if !resp.NextPage.Results {
+			break
+		}
+		opts.Cursor = resp.NextPage.Cursor
 	}
 
 	for idx, sTeam := range sTeams {

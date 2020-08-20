@@ -97,7 +97,7 @@ var _ = Describe("TeamsService", func() {
 		)
 
 		JustBeforeEach(func() {
-			projects, resp, err = client.Organizations.ListProjects("organization")
+			projects, resp, err = client.Organizations.ListProjects("organization", &sentry.ListOptions{})
 		})
 
 		It("returns a 200 OK response", func() {
@@ -105,11 +105,13 @@ var _ = Describe("TeamsService", func() {
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(resp.NextPage).To(Equal(&sentry.Page{
-				URL:     "https://sentry.io/api/0/next",
+				URL:     "https://sentry.io/api/0/next/?&cursor=0:0:0",
+				Cursor:  "0:0:0",
 				Results: false,
 			}))
 			Expect(resp.PrevPage).To(Equal(&sentry.Page{
-				URL:     "https://sentry.io/api/0/previous",
+				URL:     "https://sentry.io/api/0/previous/?&cursor=0:0:1",
+				Cursor:  "0:0:1",
 				Results: true,
 			}))
 

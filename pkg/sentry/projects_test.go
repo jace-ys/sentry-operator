@@ -30,7 +30,7 @@ var _ = Describe("ProjectsService", func() {
 		)
 
 		JustBeforeEach(func() {
-			projects, resp, err = client.Projects.List()
+			projects, resp, err = client.Projects.List(&sentry.ListOptions{})
 		})
 
 		It("returns a 200 OK response", func() {
@@ -38,11 +38,13 @@ var _ = Describe("ProjectsService", func() {
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(resp.NextPage).To(Equal(&sentry.Page{
-				URL:     "https://sentry.io/api/0/next",
+				URL:     "https://sentry.io/api/0/next/?&cursor=0:0:0",
+				Cursor:  "0:0:0",
 				Results: false,
 			}))
 			Expect(resp.PrevPage).To(Equal(&sentry.Page{
-				URL:     "https://sentry.io/api/0/previous",
+				URL:     "https://sentry.io/api/0/previous/?&cursor=0:0:1",
+				Cursor:  "0:0:1",
 				Results: true,
 			}))
 
@@ -348,7 +350,7 @@ var _ = Describe("ProjectsService", func() {
 		)
 
 		JustBeforeEach(func() {
-			keys, resp, err = client.Projects.ListKeys("organization", "project")
+			keys, resp, err = client.Projects.ListKeys("organization", "project", &sentry.ListOptions{})
 		})
 
 		It("returns a 200 OK response", func() {
@@ -356,11 +358,13 @@ var _ = Describe("ProjectsService", func() {
 			Expect(resp.Response).To(HaveHTTPStatus(http.StatusOK))
 
 			Expect(resp.NextPage).To(Equal(&sentry.Page{
-				URL:     "https://sentry.io/api/0/next",
+				URL:     "https://sentry.io/api/0/next/?&cursor=0:0:0",
+				Cursor:  "0:0:0",
 				Results: false,
 			}))
 			Expect(resp.PrevPage).To(Equal(&sentry.Page{
-				URL:     "https://sentry.io/api/0/previous",
+				URL:     "https://sentry.io/api/0/previous/?&cursor=0:0:1",
+				Cursor:  "0:0:1",
 				Results: true,
 			}))
 

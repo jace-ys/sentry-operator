@@ -140,8 +140,9 @@ var _ = Describe("TestReconciler", func() {
 				Expect(team.Spec).To(Equal(team.Spec))
 
 				By("invoked the Sentry client's .Teams.List method")
-				organizationSlug := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)
+				organizationSlug, opts := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
+				Expect(opts.Cursor).To(BeEmpty())
 
 				By("invoked the Sentry client's .Teams.Update method")
 				organizationSlug, teamSlug, params := fakeSentryTeams.UpdateArgsForCall(fakeSentryTeams.UpdateCallCount() - 1)
@@ -176,8 +177,9 @@ var _ = Describe("TestReconciler", func() {
 			Expect(team.Spec).To(Equal(team.Spec))
 
 			By("invoked the Sentry client's .Teams.List method")
-			organizationSlug := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)
+			organizationSlug, opts := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
+			Expect(opts.Cursor).To(BeEmpty())
 
 			By("invoked the Sentry client's .Teams.Update method")
 			organizationSlug, teamSlug, params := fakeSentryTeams.UpdateArgsForCall(fakeSentryTeams.UpdateCallCount() - 1)
@@ -211,8 +213,9 @@ var _ = Describe("TestReconciler", func() {
 			}, timeout, interval).ShouldNot(Succeed())
 
 			By("invoked the Sentry client's .Teams.List method")
-			organizationSlug := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)
+			organizationSlug, opts := fakeSentryTeams.ListArgsForCall(fakeSentryTeams.ListCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
+			Expect(opts.Cursor).To(BeEmpty())
 
 			By("invoked the Sentry client's .Teams.Delete method")
 			organizationSlug, teamSlug := fakeSentryTeams.DeleteArgsForCall(fakeSentryTeams.DeleteCallCount() - 1)

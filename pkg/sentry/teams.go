@@ -21,8 +21,14 @@ type Team struct {
 	Slug        string    `json:"slug"`
 }
 
-func (s *TeamsService) List(organizationSlug string) ([]Team, *Response, error) {
-	endpoint := fmt.Sprintf("/organizations/%s/teams", organizationSlug)
+func (s *TeamsService) List(organizationSlug string, opts *ListOptions) ([]Team, *Response, error) {
+	var endpoint string
+	if opts.Cursor == "" {
+		endpoint = fmt.Sprintf("/organizations/%s/teams", organizationSlug)
+	} else {
+		endpoint = fmt.Sprintf("/organizations/%s/teams/?&cursor=%s", organizationSlug, opts.Cursor)
+	}
+
 	req, err := s.client.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, nil, err
@@ -90,8 +96,14 @@ func (s *TeamsService) Delete(organizationSlug, teamSlug string) (*Response, err
 	return resp, err
 }
 
-func (s *TeamsService) ListProjects(organizationSlug, teamSlug string) ([]Project, *Response, error) {
-	endpoint := fmt.Sprintf("/teams/%s/%s/projects", organizationSlug, teamSlug)
+func (s *TeamsService) ListProjects(organizationSlug, teamSlug string, opts *ListOptions) ([]Project, *Response, error) {
+	var endpoint string
+	if opts.Cursor == "" {
+		endpoint = fmt.Sprintf("/teams/%s/%s/projects", organizationSlug, teamSlug)
+	} else {
+		endpoint = fmt.Sprintf("/teams/%s/%s/projects/?&cursor=%s", organizationSlug, teamSlug, opts.Cursor)
+	}
+
 	req, err := s.client.newRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, nil, err

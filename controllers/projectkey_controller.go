@@ -170,15 +170,25 @@ func (r *ProjectKeyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 // returns an ErrOutOfSync error if the resource cannot be found. It also returns our associated project's slug, as it's
 // not part of the payload returned when listing a Sentry project's keys.
 func (r *ProjectKeyReconciler) getExistingState(projectkey sentryv1alpha1.ProjectKey) (*sentry.ProjectKey, string, error) {
-	sProjects, resp, err := r.Sentry.Client.Organizations.ListProjects(r.Sentry.Organization)
-	if err != nil {
-		switch {
-		case resp.StatusCode >= 500:
-			return nil, "", retryableError{err}
-		default:
-			// Don't retry on 4XX errors as these indicate that there might be an issue with our organization
-			return nil, "", err
+	listProjectsOpts := &sentry.ListOptions{}
+	var sProjects []sentry.Project
+	for {
+		projects, resp, err := r.Sentry.Client.Organizations.ListProjects(r.Sentry.Organization, listProjectsOpts)
+		if err != nil {
+			switch {
+			case resp.StatusCode >= 500:
+				return nil, "", retryableError{err}
+			default:
+				// Don't retry on 4XX errors as these indicate that there might be an issue with our organization
+				return nil, "", err
+			}
 		}
+
+		sProjects = append(sProjects, projects...)
+		if !resp.NextPage.Results {
+			break
+		}
+		listProjectsOpts.Cursor = resp.NextPage.Cursor
 	}
 
 	var projectSlug string
@@ -191,17 +201,27 @@ func (r *ProjectKeyReconciler) getExistingState(projectkey sentryv1alpha1.Projec
 		return nil, "", ErrOutOfSync
 	}
 
-	sProjectKeys, resp, err := r.Sentry.Client.Projects.ListKeys(r.Sentry.Organization, projectSlug)
-	if err != nil {
-		switch {
-		case resp.StatusCode >= 500:
-			return nil, "", retryableError{err}
-		case resp.StatusCode == http.StatusNotFound:
-			return nil, "", ErrOutOfSync
-		default:
-			// Don't retry on other 4XX errors as these indicate that there might be an issue with our spec
-			return nil, "", err
+	listKeysOpts := &sentry.ListOptions{}
+	var sProjectKeys []sentry.ProjectKey
+	for {
+		keys, resp, err := r.Sentry.Client.Projects.ListKeys(r.Sentry.Organization, projectSlug, listKeysOpts)
+		if err != nil {
+			switch {
+			case resp.StatusCode >= 500:
+				return nil, "", retryableError{err}
+			case resp.StatusCode == http.StatusNotFound:
+				return nil, "", ErrOutOfSync
+			default:
+				// Don't retry on other 4XX errors as these indicate that there might be an issue with our spec
+				return nil, "", err
+			}
 		}
+
+		sProjectKeys = append(sProjectKeys, keys...)
+		if !resp.NextPage.Results {
+			break
+		}
+		listKeysOpts.Cursor = resp.NextPage.Cursor
 	}
 
 	for idx, sProjectKey := range sProjectKeys {

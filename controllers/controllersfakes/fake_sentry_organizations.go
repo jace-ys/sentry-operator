@@ -9,10 +9,11 @@ import (
 )
 
 type FakeSentryOrganizations struct {
-	ListProjectsStub        func(string) ([]sentry.Project, *sentry.Response, error)
+	ListProjectsStub        func(string, *sentry.ListOptions) ([]sentry.Project, *sentry.Response, error)
 	listProjectsMutex       sync.RWMutex
 	listProjectsArgsForCall []struct {
 		arg1 string
+		arg2 *sentry.ListOptions
 	}
 	listProjectsReturns struct {
 		result1 []sentry.Project
@@ -28,16 +29,17 @@ type FakeSentryOrganizations struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeSentryOrganizations) ListProjects(arg1 string) ([]sentry.Project, *sentry.Response, error) {
+func (fake *FakeSentryOrganizations) ListProjects(arg1 string, arg2 *sentry.ListOptions) ([]sentry.Project, *sentry.Response, error) {
 	fake.listProjectsMutex.Lock()
 	ret, specificReturn := fake.listProjectsReturnsOnCall[len(fake.listProjectsArgsForCall)]
 	fake.listProjectsArgsForCall = append(fake.listProjectsArgsForCall, struct {
 		arg1 string
-	}{arg1})
-	fake.recordInvocation("ListProjects", []interface{}{arg1})
+		arg2 *sentry.ListOptions
+	}{arg1, arg2})
+	fake.recordInvocation("ListProjects", []interface{}{arg1, arg2})
 	fake.listProjectsMutex.Unlock()
 	if fake.ListProjectsStub != nil {
-		return fake.ListProjectsStub(arg1)
+		return fake.ListProjectsStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
@@ -52,17 +54,17 @@ func (fake *FakeSentryOrganizations) ListProjectsCallCount() int {
 	return len(fake.listProjectsArgsForCall)
 }
 
-func (fake *FakeSentryOrganizations) ListProjectsCalls(stub func(string) ([]sentry.Project, *sentry.Response, error)) {
+func (fake *FakeSentryOrganizations) ListProjectsCalls(stub func(string, *sentry.ListOptions) ([]sentry.Project, *sentry.Response, error)) {
 	fake.listProjectsMutex.Lock()
 	defer fake.listProjectsMutex.Unlock()
 	fake.ListProjectsStub = stub
 }
 
-func (fake *FakeSentryOrganizations) ListProjectsArgsForCall(i int) string {
+func (fake *FakeSentryOrganizations) ListProjectsArgsForCall(i int) (string, *sentry.ListOptions) {
 	fake.listProjectsMutex.RLock()
 	defer fake.listProjectsMutex.RUnlock()
 	argsForCall := fake.listProjectsArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeSentryOrganizations) ListProjectsReturns(result1 []sentry.Project, result2 *sentry.Response, result3 error) {

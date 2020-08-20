@@ -56,10 +56,11 @@ type FakeSentryTeams struct {
 		result1 *sentry.Response
 		result2 error
 	}
-	ListStub        func(string) ([]sentry.Team, *sentry.Response, error)
+	ListStub        func(string, *sentry.ListOptions) ([]sentry.Team, *sentry.Response, error)
 	listMutex       sync.RWMutex
 	listArgsForCall []struct {
 		arg1 string
+		arg2 *sentry.ListOptions
 	}
 	listReturns struct {
 		result1 []sentry.Team
@@ -291,16 +292,17 @@ func (fake *FakeSentryTeams) DeleteReturnsOnCall(i int, result1 *sentry.Response
 	}{result1, result2}
 }
 
-func (fake *FakeSentryTeams) List(arg1 string) ([]sentry.Team, *sentry.Response, error) {
+func (fake *FakeSentryTeams) List(arg1 string, arg2 *sentry.ListOptions) ([]sentry.Team, *sentry.Response, error) {
 	fake.listMutex.Lock()
 	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
 	fake.listArgsForCall = append(fake.listArgsForCall, struct {
 		arg1 string
-	}{arg1})
-	fake.recordInvocation("List", []interface{}{arg1})
+		arg2 *sentry.ListOptions
+	}{arg1, arg2})
+	fake.recordInvocation("List", []interface{}{arg1, arg2})
 	fake.listMutex.Unlock()
 	if fake.ListStub != nil {
-		return fake.ListStub(arg1)
+		return fake.ListStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
@@ -315,17 +317,17 @@ func (fake *FakeSentryTeams) ListCallCount() int {
 	return len(fake.listArgsForCall)
 }
 
-func (fake *FakeSentryTeams) ListCalls(stub func(string) ([]sentry.Team, *sentry.Response, error)) {
+func (fake *FakeSentryTeams) ListCalls(stub func(string, *sentry.ListOptions) ([]sentry.Team, *sentry.Response, error)) {
 	fake.listMutex.Lock()
 	defer fake.listMutex.Unlock()
 	fake.ListStub = stub
 }
 
-func (fake *FakeSentryTeams) ListArgsForCall(i int) string {
+func (fake *FakeSentryTeams) ListArgsForCall(i int) (string, *sentry.ListOptions) {
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
 	argsForCall := fake.listArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeSentryTeams) ListReturns(result1 []sentry.Team, result2 *sentry.Response, result3 error) {

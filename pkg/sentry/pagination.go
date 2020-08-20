@@ -7,6 +7,7 @@ import (
 
 type Page struct {
 	URL     string
+	Cursor  string
 	Results bool
 }
 
@@ -22,17 +23,31 @@ func (r *Response) parsePaginationLinks() {
 		pageURL := strings.TrimLeft(strings.TrimSpace(segments[0]), "<")
 		pageURL = strings.TrimRight(pageURL, ">")
 
-		resultsBool := strings.Trim(strings.Split(strings.TrimSpace(segments[2]), "=")[1], `"`)
+		resultsBool := parseSegmentValue(segments[2])
 		results, err := strconv.ParseBool(resultsBool)
 		if err != nil {
 			results = false
 		}
 
-		page := &Page{URL: pageURL, Results: results}
-		if strings.TrimSpace(segments[1]) == `rel="next"` {
+		page := &Page{
+			URL:     pageURL,
+			Cursor:  parseSegmentValue(segments[3]),
+			Results: results,
+		}
+
+		if parseSegmentValue(segments[1]) == "next" {
 			r.NextPage = page
 		} else {
 			r.PrevPage = page
 		}
 	}
+}
+
+func parseSegmentValue(segment string) string {
+	parts := strings.Split(strings.TrimSpace(segment), "=")
+	if len(parts) < 2 {
+		return ""
+	}
+
+	return strings.Trim(parts[1], `"`)
 }

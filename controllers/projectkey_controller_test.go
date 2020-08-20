@@ -189,13 +189,15 @@ var _ = Describe("ProjectKeyReconciler", func() {
 				Expect(projectkey.Spec).To(Equal(projectkey.Spec))
 
 				By("invoked the Sentry client's .Organizations.ListProjects method")
-				organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
+				organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
+				Expect(opts.Cursor).To(BeEmpty())
 
 				By("invoked the Sentry client's .Projects.ListKeys method")
-				organizationSlug, projectSlug := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
+				organizationSlug, projectSlug, opts := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
 				Expect(projectSlug).To(Equal(project.Slug))
+				Expect(opts.Cursor).To(BeEmpty())
 
 				By("invoked the Sentry client's .Projects.UpdateKey method")
 				organizationSlug, projectSlug, keyID, params := fakeSentryProjects.UpdateKeyArgsForCall(fakeSentryProjects.UpdateKeyCallCount() - 1)
@@ -240,13 +242,15 @@ var _ = Describe("ProjectKeyReconciler", func() {
 				Expect(projectkey.Spec).To(Equal(projectkey.Spec))
 
 				By("invoked the Sentry client's .Organizations.ListProjects method")
-				organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
+				organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
+				Expect(opts.Cursor).To(BeEmpty())
 
 				By("invoked the Sentry client's .Projects.ListKeys method")
-				organizationSlug, projectSlug := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
+				organizationSlug, projectSlug, opts := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
 				Expect(organizationSlug).To(Equal("organization"))
 				Expect(projectSlug).To(Equal(project.Slug))
+				Expect(opts.Cursor).To(BeEmpty())
 			})
 		})
 
@@ -273,13 +277,15 @@ var _ = Describe("ProjectKeyReconciler", func() {
 			Expect(projectkey.Spec).To(Equal(projectkey.Spec))
 
 			By("invoked the Sentry client's .Organizations.ListProjects method")
-			organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
+			organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
+			Expect(opts.Cursor).To(BeEmpty())
 
 			By("invoked the Sentry client's .Projects.ListKeys method")
-			organizationSlug, projectSlug := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
+			organizationSlug, projectSlug, opts := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
 			Expect(projectSlug).To(Equal(project.Slug))
+			Expect(opts.Cursor).To(BeEmpty())
 
 			By("invoked the Sentry client's .Projects.UpdateKey method")
 			organizationSlug, projectSlug, keyID, params := fakeSentryProjects.UpdateKeyArgsForCall(fakeSentryProjects.UpdateKeyCallCount() - 1)
@@ -344,13 +350,15 @@ var _ = Describe("ProjectKeyReconciler", func() {
 			}, timeout, interval).ShouldNot(Succeed())
 
 			By("invoked the Sentry client's .Organizations.ListProjects method")
-			organizationSlug := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
+			organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
+			Expect(opts.Cursor).To(BeEmpty())
 
 			By("invoked the Sentry client's .Projects.ListKeys method")
-			organizationSlug, projectSlug := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
+			organizationSlug, projectSlug, opts := fakeSentryProjects.ListKeysArgsForCall(fakeSentryProjects.ListKeysCallCount() - 1)
 			Expect(organizationSlug).To(Equal("organization"))
 			Expect(projectSlug).To(Equal(project.Slug))
+			Expect(opts.Cursor).To(BeEmpty())
 
 			By("invoked the Sentry client's .Projects.DeleteKey method")
 			organizationSlug, projectSlug, keyID := fakeSentryProjects.DeleteKeyArgsForCall(fakeSentryProjects.DeleteKeyCallCount() - 1)

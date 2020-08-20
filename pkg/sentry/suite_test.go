@@ -48,7 +48,7 @@ func testHandler(method string, handlerFunc func(http.ResponseWriter, *http.Requ
 }
 
 func newPaginationLinks() string {
-	return `<https://sentry.io/api/0/previous>; rel="previous"; results="true", <https://sentry.io/api/0/next>; rel="next"; results="false"`
+	return `<https://sentry.io/api/0/previous/?&cursor=0:0:1>; rel="previous"; results="true"; cursor="0:0:1", <https://sentry.io/api/0/next/?&cursor=0:0:0>; rel="next"; results="false"; cursor="0:0:0"`
 }
 
 func newAPIError(apiErr sentry.APIError) []byte {
