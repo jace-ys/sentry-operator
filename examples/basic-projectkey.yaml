@@ -2,7 +2,7 @@
 apiVersion: sentry.kubernetes.jaceys.me/v1alpha1
 kind: ProjectKey
 metadata:
-  name: basic-projectkey
+  name: bar-production
 spec:
-  project: my-project
-  name: my-projectkey
+  project: bar
+  name: production

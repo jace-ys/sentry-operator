@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bar
+spec:
+  restartPolicy: OnFailure
+  containers:
+    - name: bar
+      image: ubuntu:18.04
+      command:
+        - echo
+      args:
+        - $(SENTRY_DSN)
+      env:
+        - name: SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: sentry-projectkey-bar-production
+              key: SENTRY_DSN

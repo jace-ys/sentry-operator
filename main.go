@@ -51,9 +51,9 @@ var (
 	metricsAddr    = cmd.Flag("metrics-address", "Address to bind the metrics endpoint to.").Default("127.0.0.1:8080").String()
 	leaderElection = cmd.Flag("leader-election", "Enable leader election for controller manager.").Bool()
 
-	sentryURL          = cmd.Flag("sentry-url", "The URL to use to connect to Sentry.").Envar("SENTRY_URL").Default("https://sentry.io/").URL()
-	sentryToken        = cmd.Flag("sentry-token", "Authentication token belonging to a user under the Sentry organization.").Envar("SENTRY_TOKEN").Required().String()
-	sentryOrganization = cmd.Flag("sentry-organization", "Slug of the Sentry organization to be managed.").Envar("SENTRY_ORGANIZATION").Required().String()
+	sentryOrganization = cmd.Flag("sentry-organization", "The slug of the Sentry organization to be managed.").Envar("SENTRY_ORGANIZATION").Required().String()
+	sentryToken        = cmd.Flag("sentry-token", "The authentication token for communicating with the Sentry API.").Envar("SENTRY_TOKEN").Required().String()
+	sentryURL          = cmd.Flag("sentry-url", "The URL of the Sentry server.").Envar("SENTRY_URL").Default("https://sentry.io").URL()
 )
 
 func init() {

@@ -23,7 +23,7 @@ manager: generate fmt vet
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet manifests
-	go run ./main.go --sentry-token ${SENTRY_TOKEN} --sentry-organization ${SENTRY_ORGANIZATION}
+	go run ./main.go --sentry-organization ${SENTRY_ORGANIZATION} --sentry-token ${SENTRY_TOKEN}
 
 # Generate code
 generate: controller-gen

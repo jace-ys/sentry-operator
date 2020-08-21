@@ -2,8 +2,8 @@
 apiVersion: sentry.kubernetes.jaceys.me/v1alpha1
 kind: Project
 metadata:
-  name: basic-project
+  name: bar
 spec:
-  team: my-team
-  name: my-project
-  slug: my-project
+  team: foo
+  name: bar
+  slug: bar

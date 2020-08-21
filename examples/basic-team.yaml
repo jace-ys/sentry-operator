@@ -2,7 +2,7 @@
 apiVersion: sentry.kubernetes.jaceys.me/v1alpha1
 kind: Team
 metadata:
-  name: basic-team
+  name: foo
 spec:
-  name: my-team
-  slug: my-team
+  name: foo
+  slug: foo
