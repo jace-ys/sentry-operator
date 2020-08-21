@@ -1,7 +1,9 @@
-[![sentry-operator-badge]][sentry-operator-workflow]
+[![ci-badge]][ci-workflow] [![release-badge]][release-workflow]
 
-[sentry-operator-badge]: https://github.com/jace-ys/sentry-operator/workflows/ci/badge.svg
-[sentry-operator-workflow]: https://github.com/jace-ys/sentry-operator/actions?query=workflow%ci
+[ci-badge]: https://github.com/jace-ys/sentry-operator/workflows/ci/badge.svg
+[ci-workflow]: https://github.com/jace-ys/sentry-operator/actions?query=workflow%ci
+[release-badge]: https://github.com/jace-ys/sentry-operator/workflows/release/badge.svg
+[release-workflow]: https://github.com/jace-ys/sentry-operator/actions?query=workflow%release
 
 # Sentry Operator
 

@@ -1,0 +1,70 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install tools
+        run: ./scripts/install.sh
+
+      - name: Initialize release context
+        id: context
+        run: |
+          echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
+
+      - name: Prepare Docker image
+        id: prepare-image
+        run: make docker-build IMG=${{ secrets.DOCKERHUB_USERNAME }}/sentry-operator:${{ steps.context.outputs.tag }}
+
+      - name: Prepare Kubernetes manifests
+        id: push-manifests
+        run: |
+          make config/release.yaml IMG=${{ secrets.DOCKERHUB_USERNAME }}/sentry-operator:${{ steps.context.outputs.tag }}
+
+      - name: Create GitHub release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.context.outputs.tag }}
+          release_name: ${{ steps.context.outputs.tag }}
+          body: |
+            ## Installation
+
+            1. Apply the Kubernetes manifests for installing the operator:
+
+            ```shell
+            kubectl apply -f https://github.com/jace-ys/sentry-operator/releases/download/${{ steps.context.outputs.tag }}/release.yaml
+            ```
+
+            2. Create a Kubernetes Secret as described in [Configuration](docs/installing.md#Configuration).
+          draft: false
+          prerelease: false
+
+      - name: Push Docker image
+        id: push-image
+        run: |
+          docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_TOKEN }}
+          make docker-push IMG=${{ secrets.DOCKERHUB_USERNAME }}/sentry-operator:${{ steps.context.outputs.tag }}
+
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/sentry-operator:${{ steps.context.outputs.tag }} ${{ secrets.DOCKERHUB_USERNAME }}/sentry-operator:latest
+          make docker-push IMG=${{ secrets.DOCKERHUB_USERNAME }}/sentry-operator:latest
+
+      - name: Upload Kubernetes manifests
+        id: upload-manifests
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./config/release.yaml
+          asset_name: release.yaml
+          asset_content_type: application/octet-stream

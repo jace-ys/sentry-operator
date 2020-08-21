@@ -69,7 +69,7 @@ func (r *ProjectKeyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 // +kubebuilder:rbac:groups=sentry.kubernetes.jaceys.me,resources=projectkeys,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=sentry.kubernetes.jaceys.me,resources=projectkeys/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=core,resources=secret,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 func (r *ProjectKeyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()

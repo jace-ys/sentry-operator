@@ -1,6 +1,6 @@
 -include .env
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= sentry-operator:v0.0.0
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
@@ -25,8 +25,25 @@ manager: generate fmt vet
 run: generate fmt vet manifests
 	go run ./main.go --sentry-token ${SENTRY_TOKEN} --sentry-organization ${SENTRY_ORGANIZATION}
 
+# Generate code
+generate: controller-gen
+	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	go generate ./...
+
+# Generate manifests e.g. CRD, RBAC etc.
+manifests: controller-gen
+	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+
+# Run go fmt against code
+fmt:
+	go fmt ./...
+
+# Run go vet against code
+vet:
+	go vet ./...
+
 cluster:
-	kind create cluster --image kindest/node:v1.16.9
+	kind create cluster
 
 cluster-load: docker-build
 	kind load docker-image ${IMG}
@@ -44,28 +61,13 @@ deploy: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/default | kubectl apply -f -
 
-# Generate manifests e.g. CRD, RBAC etc.
-manifests: controller-gen
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
-
-release: manifests
-	kustomize build config/default -o config/release.yaml
-
-# Run go fmt against code
-fmt:
-	go fmt ./...
-
-# Run go vet against code
-vet:
-	go vet ./...
-
-# Generate code
-generate: controller-gen
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
-	go generate ./...
+# Compile our manifests into a single deployable artifact to be released
+config/release.yaml: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/default > $@
 
 # Build the docker image
-docker-build: test
+docker-build:
 	docker build . -t ${IMG}
 
 # Push the docker image

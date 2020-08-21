@@ -1,9 +1,15 @@
 name: ci
 
-on: push
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -15,35 +21,13 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-sentry-operator-${{ hashFiles('go.sum') }}
           restore-keys: ${{ runner.os }}-sentry-operator-
-
-      - name: Install tools
-        run: ./scripts/install.sh
-
       - name: Install dependencies
         run: |
           go mod tidy
           git diff --exit-code --name-only
 
-      - name: Ensure generated code
-        run: |
-          make generate manifests
-          git add -N . && git diff --exit-code --name-only
-
-      - name: Lint
-        run: |
-          make fmt
-          git diff --exit-code --name-only
-
-      - name: Run tests
-        run: make test
-
-      - name: Build binary
-        run: make manager
-
-      - name: Build image
-        run: make docker-build
-
-  release:
+  ensure:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -55,11 +39,53 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-sentry-operator-${{ hashFiles('go.sum') }}
           restore-keys: ${{ runner.os }}-sentry-operator-
-
-      - name: Install tools
-        run: ./scripts/install.sh
-
-      - name: Ensure generated release
+      - name: Ensure codegen
         run: |
-          make release
+          make generate manifests
           git add -N . && git diff --exit-code --name-only
+      - name: Lint
+        run: |
+          make fmt
+          git diff --exit-code --name-only
+
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "1.13"
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-sentry-operator-${{ hashFiles('go.sum') }}
+          restore-keys: ${{ runner.os }}-sentry-operator-
+      - name: Install tools
+        run: |
+          ./scripts/install.sh
+      - name: Run tests
+        run: make test
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "1.13"
+      - uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-sentry-operator-${{ hashFiles('go.sum') }}
+          restore-keys: ${{ runner.os }}-sentry-operator-
+      - name: Build binary
+        run: make manager
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image
+        run: make docker-build
