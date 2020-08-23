@@ -38,11 +38,7 @@ To get a better idea on using these CRDs, take a look at the [examples](examples
 ## Limitations
 
 - The Sentry API doesn't provide endpoints for managing the members of a team. This limits the usefulness of the `Team` CRD as you'll still need to manually add and delete team members via the Sentry UI.
-- Changing a project's team via the Sentry API has been [deprecated](https://docs.sentry.io/api/projects/put-project-details). To do this, you'll need to manually update the team via the Sentry UI, and update your `Project` spec accordingly to reflect the change.
-
-## Issues
-
-If you have any questions, encounter any bugs, or would like to propose any features, please [create an issue in this repository](https://github.com/jace-ys/sentry-operator/issues/new).
+- Changing a project's team via the Sentry API has been [deprecated](https://docs.sentry.io/api/projects/put-project-details/). To do this, you'll need to manually update the team via the Sentry UI, and update your `Project` spec accordingly to reflect the change.
 
 ## Contributing
 

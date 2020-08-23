@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- An existing Kubernetes cluster
+- An existing Kubernetes cluster of version 1.11.3+
 
 ## Installation
 
