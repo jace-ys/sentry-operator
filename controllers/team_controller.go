@@ -140,7 +140,6 @@ func (r *TeamReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 // returns an ErrOutOfSync error if the resource cannot be found.
 func (r *TeamReconciler) getExistingState(team sentryv1alpha1.Team) (*sentry.Team, error) {
 	opts := &sentry.ListOptions{}
-
 	var sTeams []sentry.Team
 	for {
 		teams, resp, err := r.Sentry.Client.Teams.List(r.Sentry.Organization, opts)
