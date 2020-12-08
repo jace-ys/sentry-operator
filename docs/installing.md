@@ -9,7 +9,7 @@
 To install the operator into your cluster, run:
 
 ```shell
-kubectl apply -f https://github.com/jace-ys/sentry-operator/releases/download/v0.1.0/release.yaml
+kubectl apply -f https://github.com/jace-ys/sentry-operator/releases/download/v0.1.1/release.yaml
 ```
 
 You can install a specific release using a different version number. Find all possible versions under [releases](https://github.com/jace-ys/sentry-operator/releases).
