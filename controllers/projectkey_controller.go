@@ -197,7 +197,9 @@ func (r *ProjectKeyReconciler) getExistingState(projectkey sentryv1alpha1.Projec
 			projectSlug = sProject.Slug
 			break
 		}
+	}
 
+	if projectSlug == "" {
 		return nil, "", ErrOutOfSync
 	}
 
