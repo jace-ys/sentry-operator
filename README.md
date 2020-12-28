@@ -7,7 +7,7 @@
 
 # Sentry Operator
 
-A Kubernetes operator for automating the provisioning and management of [Sentry](<(https://sentry.io/)>) resources via Kubernetes CRDs.
+A Kubernetes operator for automating the provisioning and management of [Sentry](https://sentry.io/) resources via Kubernetes CRDs.
 
 ## Foreword
 
