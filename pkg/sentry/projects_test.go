@@ -649,5 +649,24 @@ var _ = Describe("ProjectsService", func() {
 				Expect(resp.Response).To(HaveHTTPStatus(http.StatusNotFound))
 			})
 		})
+
+		Context("when project has been moved", func() {
+			handler.HandleFunc("/api/0/projects/organization/project/keys/moved/",
+				testHandler(http.MethodDelete, func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Location", "/api/0/projects/organization/moved/keys/valid")
+					w.WriteHeader(http.StatusFound)
+					w.Write(newAPIError(sentry.APIError{"detail": "Resource has been moved"}))
+				}),
+			)
+
+			BeforeEach(func() {
+				keyID = "moved"
+			})
+
+			It("returns a 302 Found error", func() {
+				Expect(err).To(MatchError(sentry.APIError{"detail": "Resource has been moved"}))
+				Expect(resp.Response).To(HaveHTTPStatus(http.StatusFound))
+			})
+		})
 	})
 })

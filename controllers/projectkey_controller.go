@@ -213,6 +213,8 @@ func (r *ProjectKeyReconciler) getExistingState(projectkey sentryv1alpha1.Projec
 				return nil, "", retryableError{err}
 			case resp.StatusCode == http.StatusNotFound:
 				return nil, "", ErrOutOfSync
+			case resp.StatusCode == http.StatusFound:
+				return nil, "", ErrOutOfSync
 			default:
 				// Don't retry on other 4XX errors as these indicate that there might be an issue with our spec
 				return nil, "", err
@@ -245,6 +247,9 @@ func (r *ProjectKeyReconciler) handleCreate(ctx context.Context, projectkey *sen
 			return nil, retryableError{err}
 		case resp.StatusCode == http.StatusNotFound:
 			// Retry on 404 errors as the error might get resolved once dependencies are satisfied
+			return nil, retryableError{err}
+		case resp.StatusCode == http.StatusFound:
+			// Retry on 302 errors as the error might get resolved once dependencies are satisfied
 			return nil, retryableError{err}
 		default:
 			// Don't retry on other 4XX errors as these indicate that we might have an issue with our spec
@@ -318,6 +323,8 @@ func (r *ProjectKeyReconciler) handleDelete(ctx context.Context, projectkey *sen
 				return retryableError{err}
 			case resp.StatusCode == http.StatusNotFound:
 				// Ignore 404 errors as our resource might have already been deleted
+			case resp.StatusCode == http.StatusFound:
+				// Ignore 302 errors as our resource might have already been deleted
 			default:
 				// Don't retry on other 4XX errors as these indicate that we might have an issue with our spec
 				return err
@@ -350,6 +357,9 @@ func (r *ProjectKeyReconciler) handleUpdate(ctx context.Context, projectkey *sen
 			return nil, retryableError{err}
 		case resp.StatusCode == http.StatusNotFound:
 			// Retry on 404 errors as the error might get resolved once dependencies are satisfied
+			return nil, retryableError{err}
+		case resp.StatusCode == http.StatusFound:
+			// Retry on 302 errors as the error might get resolved once dependencies are satisfied
 			return nil, retryableError{err}
 		default:
 			// Don't retry on 4XX errors as these indicate that we might have an issue with our spec

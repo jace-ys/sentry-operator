@@ -39,7 +39,14 @@ func NewClient(token string, opts ...ClientOption) *Client {
 	sentryURL.Path = path.Join("api", strconv.Itoa(APIVersion)) + "/"
 
 	client := &Client{
-		client:  &http.Client{},
+		client: &http.Client{
+			// Don't follow (302) redirects from the Sentry API, as we won't be able to preserve the
+			// original HTTP method and body, falling back to a GET request instead which might break how
+			// the response body is unmarshalled into our data structures.
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		},
 		baseURL: sentryURL,
 		token:   token,
 	}
