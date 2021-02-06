@@ -240,7 +240,7 @@ func (r *ProjectReconciler) handleUpdate(ctx context.Context, project *sentryv1a
 	// Workaround to move project under a new team: manually modify the project's team via the Sentry UI, and update our
 	// spec accordingly to reflect the change.
 	if project.Spec.Team != existing.Team.Slug {
-		return retryableError{fmt.Errorf("%w: Project's team could not be updated", ErrOutOfSync)}
+		return fmt.Errorf("%w: Project's team could not be updated", ErrOutOfSync)
 	}
 
 	sProject, resp, err := r.Sentry.Client.Projects.Update(r.Sentry.Organization, existing.Slug, &sentry.UpdateProjectParams{

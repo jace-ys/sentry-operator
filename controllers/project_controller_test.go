@@ -117,6 +117,49 @@ var _ = Describe("ProjectReconciler", func() {
 			fakeSentryProjects.UpdateReturns(updated, newSentryResponse(http.StatusOK), nil)
 		})
 
+		It("the Project gets updated successfully", func() {
+			Expect(k8sClient.Update(ctx, project)).To(Succeed())
+
+			By("with the expected status")
+			Eventually(func() (*sentryv1alpha1.ProjectStatus, error) {
+				err := k8sClient.Get(ctx, lookupKey, project)
+				if err != nil {
+					return nil, err
+				}
+				return &project.Status, nil
+			}, timeout, interval).Should(
+				PointTo(MatchFields(IgnoreExtras, Fields{
+					"Condition": Equal(sentryv1alpha1.ProjectConditionCreated),
+					"Message":   BeEmpty(),
+					"ID":        Equal("12345"),
+				})),
+			)
+
+			By("with the desired spec")
+			Expect(project.Spec).To(Equal(sentryv1alpha1.ProjectSpec{
+				Team: "test-team",
+				Name: "test-project-update",
+				Slug: "test-project-update",
+			}))
+
+			By("with the expected finalizer")
+			Expect(project.Finalizers).To(ContainElement(controllers.ProjectFinalizerName))
+
+			By("invoked the Sentry client's .Organizations.ListProjects method")
+			organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
+			Expect(organizationSlug).To(Equal("organization"))
+			Expect(opts.Cursor).To(BeEmpty())
+
+			By("invoked the Sentry client's .Projects.Update method")
+			organizationSlug, projectSlug, params := fakeSentryProjects.UpdateArgsForCall(fakeSentryProjects.UpdateCallCount() - 1)
+			Expect(organizationSlug).To(Equal("organization"))
+			Expect(projectSlug).To(Equal(existing.Slug))
+			Expect(params).To(Equal(&sentry.UpdateProjectParams{
+				Name: project.Spec.Name,
+				Slug: project.Spec.Slug,
+			}))
+		})
+
 		Context("the Sentry client returns an error", func() {
 			BeforeEach(func() {
 				project.Spec.Name = "test-project-error"
@@ -207,49 +250,6 @@ var _ = Describe("ProjectReconciler", func() {
 				Expect(organizationSlug).To(Equal("organization"))
 				Expect(opts.Cursor).To(BeEmpty())
 			})
-		})
-
-		It("the Project gets updated successfully", func() {
-			Expect(k8sClient.Update(ctx, project)).To(Succeed())
-
-			By("with the expected status")
-			Eventually(func() (*sentryv1alpha1.ProjectStatus, error) {
-				err := k8sClient.Get(ctx, lookupKey, project)
-				if err != nil {
-					return nil, err
-				}
-				return &project.Status, nil
-			}, timeout, interval).Should(
-				PointTo(MatchFields(IgnoreExtras, Fields{
-					"Condition": Equal(sentryv1alpha1.ProjectConditionCreated),
-					"Message":   BeEmpty(),
-					"ID":        Equal("12345"),
-				})),
-			)
-
-			By("with the desired spec")
-			Expect(project.Spec).To(Equal(sentryv1alpha1.ProjectSpec{
-				Team: "test-team",
-				Name: "test-project-update",
-				Slug: "test-project-update",
-			}))
-
-			By("with the expected finalizer")
-			Expect(project.Finalizers).To(ContainElement(controllers.ProjectFinalizerName))
-
-			By("invoked the Sentry client's .Organizations.ListProjects method")
-			organizationSlug, opts := fakeSentryOrganizations.ListProjectsArgsForCall(fakeSentryOrganizations.ListProjectsCallCount() - 1)
-			Expect(organizationSlug).To(Equal("organization"))
-			Expect(opts.Cursor).To(BeEmpty())
-
-			By("invoked the Sentry client's .Projects.Update method")
-			organizationSlug, projectSlug, params := fakeSentryProjects.UpdateArgsForCall(fakeSentryProjects.UpdateCallCount() - 1)
-			Expect(organizationSlug).To(Equal("organization"))
-			Expect(projectSlug).To(Equal(existing.Slug))
-			Expect(params).To(Equal(&sentry.UpdateProjectParams{
-				Name: project.Spec.Name,
-				Slug: project.Spec.Slug,
-			}))
 		})
 	})
 
